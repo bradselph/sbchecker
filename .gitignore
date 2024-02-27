@@ -399,4 +399,8 @@ FodyWeavers.xsd
 .idea/vcs.xml
 .env
 internal/database/sbchecker.db
+sbchecker.exe
+internal/database/sbchecker.db
+*.db
+.idea/.name
 internal/database/sbchecker.db
