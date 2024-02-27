@@ -301,9 +301,7 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files 
-*.ncb
-*.aps
+# Visual Studio 6 technical files
 
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts

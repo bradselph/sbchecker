@@ -58,10 +58,10 @@ func StartBot() (*discordgo.Session, error) {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
 
 		addaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["addaccount"] = addaccount.AddAccountCommand
+		commandHandlers["addaccount"] = addaccount.Command
 
 		removeaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["removeaccount"] = removeaccount.RemoveAccountCommand
+		commandHandlers["removeaccount"] = removeaccount.Command
 
 		accountlogs.RegisterCommand(dc, guild.ID)
 		commandHandlers["accountlogs"] = accountlogs.CheckAccountLogsCommand
