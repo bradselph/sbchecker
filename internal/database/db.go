@@ -10,7 +10,7 @@ import (
 var DB *gorm.DB
 
 func Initialize() error {
-	db, err := gorm.Open(sqlite.Open("sbchecker.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("internal/database/sbchecker.db"), &gorm.Config{})
 	if err != nil {
 		logger.Log.WithError(err).Error("Error opening database")
 		return err
