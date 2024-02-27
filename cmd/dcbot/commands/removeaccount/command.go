@@ -58,7 +58,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-func RemoveAccountCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()

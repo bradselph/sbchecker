@@ -61,7 +61,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-func AddAccountCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Invoked addaccount command")
 
 	title := i.ApplicationCommandData().Options[0].StringValue()
