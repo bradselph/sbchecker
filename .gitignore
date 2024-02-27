@@ -394,3 +394,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea/dataSources.xml
+.idea/sbchecker.iml
+.idea/vcs.xml
+.env
+internal/database/sbchecker.db
+internal/database/sbchecker.db
