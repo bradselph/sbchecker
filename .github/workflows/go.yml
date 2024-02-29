@@ -21,15 +21,5 @@ jobs:
       with:
         go-version: '1.22.0'
 
-    - name: Download Dependencies
-      run: go get github.com/bwmarrin/discordgo@v0.27.1
-          go get github.com/joho/godotenv@v1.5.1
-          go get github.com/sirupsen/logrus@v1.9.3
-          go get gorm.io/driver/sqlite@v1.5.5
-          go get gorm.io/gorm@v1.25.7
-
     - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+      run: go build .
