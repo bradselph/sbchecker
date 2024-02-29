@@ -22,8 +22,7 @@ jobs:
       run: go env
       
     - name: Set Environment 
-      run: go env -w CGO_ENABLED=0
-           go env -w GOOS=linux GOARCH=amd64 
+      run: go env -w CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
            
     - name: ReCheck Environment 
       run: go env
