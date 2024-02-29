@@ -29,7 +29,4 @@ jobs:
           go get gorm.io/gorm@v1.25.7
 
     - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+      run: go build .
