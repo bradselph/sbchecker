@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/silenta-salmans/sbchecker/internal"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
-	"github.com/silenta-salmans/sbchecker/models"
+	"sbchecker/internal"
+	"sbchecker/internal/logger"
+	"sbchecker/models"
 )
 
 var URL = "https://support.activision.com/api/bans/appeal?locale=en"

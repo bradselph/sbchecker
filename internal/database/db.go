@@ -1,10 +1,10 @@
 package database
 
 import (
-	"github.com/silenta-salmans/sbchecker/internal/logger"
-	"github.com/silenta-salmans/sbchecker/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"sbchecker/internal/logger"
+	"sbchecker/models"
 )
 
 var DB *gorm.DB

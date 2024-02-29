@@ -4,12 +4,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	bot "sbchecker/cmd/dcbot"
+	"sbchecker/internal/database"
+	"sbchecker/internal/logger"
+	"sbchecker/internal/services"
 	"syscall"
-
-	bot "github.com/silenta-salmans/sbchecker/cmd/dcbot"
-	"github.com/silenta-salmans/sbchecker/internal/database"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
-	"github.com/silenta-salmans/sbchecker/internal/services"
 )
 
 func main() {

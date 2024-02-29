@@ -5,10 +5,10 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
-	"github.com/silenta-salmans/sbchecker/cmd/dcbot/commands/accountlogs"
-	"github.com/silenta-salmans/sbchecker/cmd/dcbot/commands/addaccount"
-	"github.com/silenta-salmans/sbchecker/cmd/dcbot/commands/removeaccount"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
+	"sbchecker/cmd/dcbot/commands/accountlogs"
+	"sbchecker/cmd/dcbot/commands/addaccount"
+	"sbchecker/cmd/dcbot/commands/removeaccount"
+	"sbchecker/internal/logger"
 )
 
 var (

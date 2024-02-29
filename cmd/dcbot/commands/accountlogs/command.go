@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/silenta-salmans/sbchecker/internal/database"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
-	"github.com/silenta-salmans/sbchecker/models"
+	"sbchecker/internal/database"
+	"sbchecker/internal/logger"
+	"sbchecker/models"
 )
 
 var choices []*discordgo.ApplicationCommandOptionChoice

@@ -2,8 +2,8 @@ package bot
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/silenta-salmans/sbchecker/internal/discord"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
+	"sbchecker/internal/discord"
+	"sbchecker/internal/logger"
 )
 
 func RunBot() (*discordgo.Session, error) {

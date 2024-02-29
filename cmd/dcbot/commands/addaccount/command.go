@@ -2,11 +2,11 @@ package addaccount
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/silenta-salmans/sbchecker/cmd/dcbot/commands/removeaccount"
-	"github.com/silenta-salmans/sbchecker/internal/database"
-	"github.com/silenta-salmans/sbchecker/internal/logger"
-	"github.com/silenta-salmans/sbchecker/internal/services"
-	"github.com/silenta-salmans/sbchecker/models"
+	"sbchecker/cmd/dcbot/commands/removeaccount"
+	"sbchecker/internal/database"
+	"sbchecker/internal/logger"
+	"sbchecker/internal/services"
+	"sbchecker/models"
 )
 
 func RegisterCommand(s *discordgo.Session, guildID string) {
