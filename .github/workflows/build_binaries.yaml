@@ -1,0 +1,27 @@
+name: Release Binaries
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-linux-amd64:
+    name: Build Linux/AMD64
+    runs-on: Ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check Environment 
+        run: go env
+    
+      - name: Build Binaries
+        uses: lmangani/go-release-action@v1.37-ubuntu
+        with:
+          github_token: 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
+          goos: linux
+          goarch: amd64
+          goversion: 1.22.0
+          project_path: .
+          binary_name: sbchecker
+          release_name: beta
