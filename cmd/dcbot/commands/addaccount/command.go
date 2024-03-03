@@ -94,6 +94,9 @@ func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags: discordgo.MessageFlagsEphemeral,
+		},
 	})
 
 	go func() {

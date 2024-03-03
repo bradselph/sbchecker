@@ -70,6 +70,7 @@ func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Account does not exist",
+				Flags:   64, // Set ephemeral flag
 			},
 		})
 		return
@@ -81,6 +82,7 @@ func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Account removed",
+			Flags:   64, // Set ephemeral flag
 		},
 	})
 
