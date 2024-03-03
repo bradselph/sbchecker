@@ -25,3 +25,4 @@ jobs:
           project_path: .
           binary_name: sbchecker
           release_name: beta
+          build_flags: -buildvcs=false
