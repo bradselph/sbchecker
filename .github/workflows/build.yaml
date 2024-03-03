@@ -1,4 +1,4 @@
-name: Release Binaries
+name: Build
 
 on:
   release:
