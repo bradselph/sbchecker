@@ -1,1 +1,1 @@
-[![Build](https://github.com/bradselph/sbchecker/actions/workflows/build_binaries.yaml/badge.svg)](https://github.com/bradselph/sbchecker/actions/workflows/build_binaries.yaml)
+[![Build](https://github.com/bradselph/sbchecker/actions/workflows/buildfile.yml/badge.svg)](https://github.com/bradselph/sbchecker/actions/workflows/buildfile.yml)
