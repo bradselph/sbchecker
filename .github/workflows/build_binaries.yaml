@@ -1,8 +1,7 @@
 name: Release Binaries
 
 on:
-  push:
-    branches: [ "main" ]
+  release: [created]
 
 jobs:
   build-linux-amd64:
@@ -22,15 +21,4 @@ jobs:
           project_path: .
           binary_name: sbchecker
           build_flags: -buildvcs=false
-
- 
-      - name: Create branch
-        run: git checkout -b build-artifacts
-
-      - name: Commit built file
-        run: |
-         git config --global user.name "bradselph"
-         git config --global user.email "Bselph512@gmail.com"
-         git add .
-         git commit -m "Add built file"
-         git push origin build-artifacts
+          
