@@ -11,9 +11,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Check Environment 
-        run: go env
     
       - name: Build Binaries
         uses: lmangani/go-release-action@v1.37-ubuntu
@@ -24,5 +21,4 @@ jobs:
           goversion: 1.22.0
           project_path: .
           binary_name: sbchecker
-          release_name: beta120
           build_flags: -buildvcs=false
