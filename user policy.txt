@@ -1,0 +1,33 @@
+CoD Status Bot User Policy
+
+Welcome to CoD Status Bot! Before you begin using our bot, please take a moment to review our user policy to ensure a smooth and enjoyable experience for everyone.
+
+1. Purpose:
+
+    CoD Status Bot is designed to provide status updates on Call of Duty accounts, including ban notifications and account verification.
+
+2. Usage Guidelines:
+
+    Respectful Conduct: Please be respectful towards other users and refrain from engaging in any form of harassment, discrimination, or hate speech.
+    Abide by Discord Terms of Service: Ensure that your use of CoD Status Bot complies with the Discord Terms of Service.
+    Lawful Use: Use CoD Status Bot for lawful purposes only. Do not engage in any activities that violate local, national, or international laws.
+    No Spamming: Avoid spamming commands or flooding channels with unnecessary bot interactions.
+    Feedback and Support: We welcome your feedback and are here to assist you with any issues or questions you may have regarding CoD Status Bot. Feel free to reach out to our support team for assistance.
+
+3. Data Usage:
+
+    Data Collection: CoD Status Bot collects and stores data necessary for its functionalities, including user IDs, server IDs, and message content related to bot interactions.
+    Data Privacy: Your data privacy is important to us. CoD Status Bot does not share your data with third parties, and all data is securely stored in accordance with industry best practices.
+    Data Retention: CoD Status Bot retains user data for as long as necessary to provide its services or as required by law. Users have the right to request the deletion of their data from CoD Status Bot's database.
+
+4. Limitation of Liability:
+
+    CoD Status Bot and its developers are not liable for any damages or losses incurred from the use of the bot. Users assume full responsibility for their interactions with the bot and its functionalities.
+
+5. Changes to Policy:
+
+    CoD Status Bot reserves the right to update or modify this user policy at any time. Users will be notified of any changes, and continued use of the bot implies acceptance of the revised policy.
+
+By using CoD Status Bot, you agree to abide by the terms outlined in this user policy. If you have any questions or concerns, please contact our support team.
+
+Thank you for choosing CoD Status Bot!
