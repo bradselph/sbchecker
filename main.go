@@ -35,7 +35,7 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	fmt.Println("Bot joined server:", guildID)
 	registerCommands(s, guildID)
-	// restartBot()  // Uncomment this line if you want to restart the bot with new guild ad
+        restartBot() 
 }
 func registerCommands(s *discordgo.Session, guildID string) {
 	fmt.Println("Registering commands for server:", guildID)
