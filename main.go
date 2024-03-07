@@ -9,7 +9,7 @@ import (
 	"sbchecker/internal/logger"
 	"sbchecker/internal/services"
 	"syscall"
-	
+
 	"github.com/bwmarrin/discordgo"
 )
 func main() {
