@@ -1,4 +1,5 @@
 package main
+
 import (
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 )
+var instance *discordgo.Session
 func main() {
 	log.Println("Initializing logger")
 	logger.Initialize()
@@ -20,7 +22,7 @@ func main() {
 	if err != nil {
 		logger.Log.WithError(err).Error("Error initializing database")
 	}
-	instance, err := bot.RunBot()
+	instance, err = bot.RunBot()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error running bot")
 	}
@@ -35,8 +37,21 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	fmt.Println("Bot joined server:", guildID)
 	registerCommands(s, guildID)
-	// restartBot()  // Uncomment this line if you want to restart the bot with new guild ad
+	restartBot()
 }
 func registerCommands(s *discordgo.Session, guildID string) {
 	fmt.Println("Registering commands for server:", guildID)
+}
+func restartBot() {
+	if err := instance.Close(); err != nil {
+		logger.Log.WithError(err).Error("Error closing Discord session")
+	}
+	var err error
+	instance, err = bot.RunBot()
+	if err != nil {
+		logger.Log.WithError(err).Error("Error restarting bot")
+		return
+	}
+	instance.AddHandler(onGuildCreate)
+	logger.Log.Info("Bot restarted successfully")
 }

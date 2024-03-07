@@ -100,3 +100,13 @@ func StopBot() error {
 
 	return nil
 }
+
+func RestartBot() error {
+	if err := StopBot(); err != nil {
+		return err
+	}
+	if _, err := StartBot(); err != nil {
+		return err
+	}
+	return nil
+}
