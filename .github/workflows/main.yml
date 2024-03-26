@@ -7,11 +7,11 @@ on:
 jobs:
   build-linux-amd64:
     name: Build Linux/AMD64
-    runs-on: Ubuntu-20.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
-    
+        uses: actions/checkout@v2
+
       - name: Build Binaries
         uses: lmangani/go-release-action@v1.37-ubuntu
         with:
@@ -26,14 +26,21 @@ jobs:
       - name: Package Directories and Files
         uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
           name: extra-directories-files
-          path: internal models cmd logs main.go .env start.sh
+          path: |
+            internal
+            models
+            cmd
+            logs
+            main.go
+            .env
+            start.sh
+          if-no-files-found: error
 
       - name: Push Release
         uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
           name: Release
           path: .  
-          exclude: .git* .idea* Readme.md go.Sum go.mod
+          exclude: .git* .idea* Readme.md go.sum go.mod
+
