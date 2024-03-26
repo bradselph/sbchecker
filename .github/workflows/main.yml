@@ -27,11 +27,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: extra-directories-files
-          path: internal models cmd logs main.go .env start.sh
+
 
       - name: Push Release
         uses: actions/upload-artifact@v2
         with:
           name: Release
           path: .  
-          exclude: .git* .idea* Readme.md go.Sum go.mod
