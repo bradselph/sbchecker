@@ -2,6 +2,7 @@ package discord
 
 import (
 	"os"
+	"sbchecker/cmd/dcbot/commands/updateaccount"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
@@ -65,6 +66,9 @@ func StartBot() (*discordgo.Session, error) {
 
 		accountlogs.RegisterCommand(dc, guild.ID)
 		commandHandlers["accountlogs"] = accountlogs.CheckAccountLogsCommand
+
+		updateaccount.RegisterCommand(dc, guild.ID)
+		commandHandlers["updateaccount"] = updateaccount.Command
 	}
 
 	dc.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -96,6 +100,7 @@ func StopBot() error {
 		addaccount.UnregisterCommand(dc, guild.ID)
 		removeaccount.UnregisterCommand(dc, guild.ID)
 		accountlogs.UnregisterCommand(dc, guild.ID)
+		updateaccount.UnregisterCommand(dc, guild.ID)
 	}
 
 	return nil
