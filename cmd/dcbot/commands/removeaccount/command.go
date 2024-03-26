@@ -2,6 +2,7 @@ package removeaccount
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"sbchecker/internal"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
@@ -90,18 +91,7 @@ func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	var accounts []models.Account
-	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
+	return internal.GetAllChoices(guildID)
 }
 
 func UpdateAccountChoices(s *discordgo.Session, guildID string) {
