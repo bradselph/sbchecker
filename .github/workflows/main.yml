@@ -26,14 +26,12 @@ jobs:
       - name: Package Directories and Files
         uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
           name: extra-directories-files
           path: internal models cmd logs main.go .env start.sh
 
       - name: Push Release
         uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
           name: Release
           path: .  
           exclude: .git* .idea* Readme.md go.Sum go.mod
