@@ -1,8 +1,11 @@
 package database
 
 import (
-	"gorm.io/driver/sqlite"
+	"fmt"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"os"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
 )
@@ -10,7 +13,21 @@ import (
 var DB *gorm.DB
 
 func Initialize() error {
-	db, err := gorm.Open(sqlite.Open("internal/database/sbchecker.db"), &gorm.Config{})
+	err := godotenv.Load()
+	if err != nil {
+		logger.Log.WithError(err).Error("Error loading .env file")
+		return err
+	}
+
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Log.WithError(err).Error("Error opening database")
 		return err

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"log"
 	"os"
 	"os/signal"
@@ -10,10 +11,10 @@ import (
 	"sbchecker/internal/logger"
 	"sbchecker/internal/services"
 	"syscall"
-
-	"github.com/bwmarrin/discordgo"
 )
+
 var instance *discordgo.Session
+
 func main() {
 	log.Println("Initializing logger")
 	logger.Initialize()
@@ -39,8 +40,6 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	registerCommands(s, guildID)
 
 	restartBot()
-
-
 
 }
 func registerCommands(s *discordgo.Session, guildID string) {

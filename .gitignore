@@ -402,3 +402,4 @@ internal/database/sbchecker.db
 sbchecker.exe
 *.db
 .idea/.name
+/Private Data
