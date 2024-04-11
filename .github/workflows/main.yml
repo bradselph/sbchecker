@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@main
 
       - name: Build Binaries
         uses: lmangani/go-release-action@v1.37-ubuntu
@@ -24,7 +24,7 @@ jobs:
           build_flags: -buildvcs=false
 
       - name: Package Directories and Files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@main
         with:
           name: extra-directories-files
           path: |
