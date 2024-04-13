@@ -51,20 +51,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	}
 
 	if result == lastStatus {
-		embed := &discordgo.MessageEmbed{
-			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
-			Description: fmt.Sprintf("The status of account %s has not changed", account.Title),
-			Color:       GetColorForBanStatus(result),
-			Timestamp:   time.Now().Format(time.RFC3339),
-		}
-
-		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
-			Embed: embed,
-		})
-		if err != nil {
-			logger.Log.WithError(err).Error("Error sending message")
-		}
-
+		logger.Log.WithField("account", account.Title).Info("No change in account status, skipping message")
 		return
 	}
 
@@ -76,7 +63,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		return
 	}
 
-	logger.Log.Infof("Account %s status changed to %s", account.Title, result)
+	logger.Log.Infof("Account %s status changed from %s to %s", account.Title, lastStatus, result)
 
 	ban := models.Ban{
 		Account:   account,
@@ -91,7 +78,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
-		Description: fmt.Sprintf("The status of account %s has changed to %s <@%s>", account.Title, result, account.UserID),
+		Description: fmt.Sprintf("The status of account %s has changed from %s to %s <@%s>", account.Title, lastStatus, result, account.UserID),
 		Color:       GetColorForBanStatus(result),
 		Timestamp:   time.Now().Format(time.RFC3339),
 	}

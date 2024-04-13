@@ -42,11 +42,21 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		registeredCommands[i] = cmd
 	}
 }
-
 func UnregisterCommand(s *discordgo.Session, guildID string) {
-	// Similar to other commands, remove this command for the given guild
+	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error getting application commands")
+		return
+	}
+	for _, command := range commands {
+		logger.Log.Infof("Deleting command %s", command.Name)
+		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
+		if err != nil {
+			logger.Log.WithError(err).Errorf("Error deleting command %s", command.Name)
+			return
+		}
+	}
 }
-
 func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	guildID := i.GuildID
