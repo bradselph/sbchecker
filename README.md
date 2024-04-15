@@ -1,5 +1,3 @@
-Certainly! Below are the detailed instructions for setting up and using the SBChecker Discord bot:
-
 ### Prerequisites
 - A Discord account and a server where you have permissions to add bots.
 - Go programming language installed on your system.
