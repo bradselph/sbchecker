@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"sbchecker/internal"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
 )
 
-var URL = "https://support.activision.com/api/bans/appeal?locale=en"
+var URL1 = "https://support.activision.com/api/bans/appeal?locale=en"
+var URL2 = "https://support.activision.com/api/profile"
 
 func VerifySSOCookie(ssoCookie string) (int, error) {
-	req, err := http.NewRequest("GET", URL, nil)
+	req, err := http.NewRequest("GET", URL1, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -29,9 +31,7 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	defer resp.Body.Close()
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error reading response body")
@@ -46,17 +46,14 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 }
 
 func CheckAccount(ssoCookie string) (models.Status, error) {
-	req, err := http.NewRequest("GET", URL, nil)
+	req, err := http.NewRequest("GET", URL1, nil)
 	if err != nil {
 		return models.StatusUnknown, err
 	}
-
 	headers := internal.GenerateHeaders(ssoCookie)
-
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -93,4 +90,39 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	}
 
 	return models.StatusUnknown, nil
+}
+
+func CheckAccountAge(ssoCookie string) (int, int, int, error) {
+	req, err := http.NewRequest("GET", URL2, nil)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	headers := internal.GenerateHeaders(ssoCookie)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	defer resp.Body.Close()
+	var data struct {
+		Created string `json:"created"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	created, err := time.Parse(time.RFC3339, data.Created)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	duration := time.Since(created)
+	years := int(duration.Hours() / 24 / 365)
+	months := int(duration.Hours()/24/30) % 12
+	days := int(duration.Hours()/24) % 365 % 30
+
+	return years, months, days, nil
 }
