@@ -10,6 +10,22 @@ import (
 	"sbchecker/models"
 )
 
+func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
+	embed := &discordgo.MessageEmbed{
+		Title:       fmt.Sprintf("24 Hour Update - %s", account.Title),
+		Description: fmt.Sprintf("The last status of account %s was %s. Your account is still being monitored.", account.Title, account.LastStatus),
+		Color:       GetColorForBanStatus(account.LastStatus),
+		Timestamp:   time.Now().Format(time.RFC3339),
+	}
+
+	_, err := discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
+		Embed: embed,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Error("Error sending message")
+	}
+}
+
 func CheckAccounts(s *discordgo.Session) {
 	for {
 		logger.Log.Info("Starting periodic account check")
@@ -27,6 +43,11 @@ func CheckAccounts(s *discordgo.Session) {
 				go CheckSingleAccount(account, s)
 			} else {
 				logger.Log.WithField("account", account.Title).Info("Account checked recently, skipping")
+			}
+
+			// Send a daily update if it's been 24 hours since the last one
+			if time.Since(lastCheck).Hours() > 24 {
+				go SendDailyUpdate(account, s)
 			}
 		}
 

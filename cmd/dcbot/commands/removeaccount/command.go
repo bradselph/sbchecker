@@ -77,7 +77,7 @@ func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	database.DB.Delete(&account)
+	database.DB.Unscoped().Delete(&account)
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

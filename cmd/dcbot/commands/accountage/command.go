@@ -1,31 +1,31 @@
-package updateaccount
+package accountage
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
+	"sbchecker/internal/services"
 )
 
+var choices []*discordgo.ApplicationCommandOptionChoice
+
 func RegisterCommand(s *discordgo.Session, guildID string) {
+	choices = getAllChoices(guildID)
+
 	commands := []*discordgo.ApplicationCommand{
 		{
-			Name:        "updateaccount",
-			Description: "Update the SSO cookie for an account",
+			Name:        "accountage",
+			Description: "Check the age of an account",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionType(discordgo.InteractionApplicationCommandAutocomplete),
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     internal.GetAllChoices(guildID), // Use the GetAllChoices function
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "sso_cookie",
-					Description: "The new SSO cookie for the account",
-					Required:    true,
+					Choices:     choices,
 				},
 			},
 		},
@@ -39,6 +39,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 			logger.Log.WithError(err).Errorf("Error creating command %s", command.Name)
 			return
 		}
+
 		registeredCommands[i] = cmd
 	}
 }
@@ -60,33 +61,52 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-func Command(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func CheckAccountAgeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
-	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
-	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
 
 	var account models.Account
-	result := database.DB.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
-	if result.Error != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Account does not exist",
-				Flags:   64, // Set ephemeral flag
-			},
-		})
+	database.DB.Where("id = ?", accountId).First(&account)
+
+	if account.UserID != userID {
+		logger.Log.WithFields(map[string]interface{}{
+			"account_id": accountId,
+			"user_id":    userID,
+		}).Warn("User tried to check age for account they don't own")
 		return
 	}
 
-	account.SSOCookie = newSSOCookie
-	database.DB.Save(&account)
+	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
+	if err != nil {
+		logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
+		return
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
+		Description: fmt.Sprintf("The account is %d years, %d months, and %d days old.", years, months, days),
+		Color:       0x00ff00,
+	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Account SSO cookie updated",
-			Flags:   64, // Set ephemeral flag
+			Embeds: []*discordgo.MessageEmbed{embed},
 		},
 	})
+}
+
+func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	var accounts []models.Account
+	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
+
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
+	for i, account := range accounts {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  account.Title,
+			Value: account.ID,
+		}
+	}
+
+	return choices
 }

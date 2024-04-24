@@ -10,6 +10,7 @@ import (
 	"sbchecker/cmd/dcbot/commands/addaccount"
 	"sbchecker/cmd/dcbot/commands/removeaccount"
 	"sbchecker/internal/logger"
+	"sbchecker/cmd/dcbot/commands/accountage"
 )
 
 var (
@@ -57,18 +58,17 @@ func StartBot() (*discordgo.Session, error) {
 
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-
 		addaccount.RegisterCommand(dc, guild.ID)
 		commandHandlers["addaccount"] = addaccount.Command
-
 		removeaccount.RegisterCommand(dc, guild.ID)
 		commandHandlers["removeaccount"] = removeaccount.Command
-
 		accountlogs.RegisterCommand(dc, guild.ID)
 		commandHandlers["accountlogs"] = accountlogs.CheckAccountLogsCommand
-
 		updateaccount.RegisterCommand(dc, guild.ID)
 		commandHandlers["updateaccount"] = updateaccount.Command
+		accountage.RegisterCommand(dc, guild.ID)
+		commandHandlers["accountage"] = accountage.CheckAccountAgeCommand
+
 	}
 
 	dc.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -101,6 +101,8 @@ func StopBot() error {
 		removeaccount.UnregisterCommand(dc, guild.ID)
 		accountlogs.UnregisterCommand(dc, guild.ID)
 		updateaccount.UnregisterCommand(dc, guild.ID)
+		accountage.UnregisterCommand(dc, guild.ID)
+
 	}
 
 	return nil
