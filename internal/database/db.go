@@ -3,12 +3,11 @@ package database
 import (
 	"fmt"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
-	_ "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/mysql"
 )
 
 var DB *gorm.DB

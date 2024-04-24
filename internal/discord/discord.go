@@ -49,7 +49,7 @@ func StartBot() (*discordgo.Session, error) {
 		return nil, err
 	}
 
-	guilds, err := dc.UserGuilds(100, "", "", false)
+	guilds, err := dc.UserGuilds(100, "", "")
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting guilds")
 		return nil, err
@@ -88,7 +88,7 @@ func StopBot() error {
 		return err
 	}
 
-	guilds, err := dc.UserGuilds(100, "", "", false)
+	guilds, err := dc.UserGuilds(100, "", "")
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting guilds")
 		return err
