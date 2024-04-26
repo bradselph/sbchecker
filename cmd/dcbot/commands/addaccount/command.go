@@ -31,16 +31,36 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		},
 	}
 
-	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
-	for i, command := range commands {
-		logger.Log.Infof("Creating command %s", command.Name)
-		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildID, command)
+	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error getting application commands")
+		return
+	}
+
+	var existingCommand *discordgo.ApplicationCommand
+	for _, command := range existingCommands {
+		if command.Name == "addaccount" {
+			existingCommand = command
+			break
+		}
+	}
+
+	newCommand := commands[0]
+
+	if existingCommand != nil {
+		logger.Log.Info("Updating addaccount command")
+		_, err = s.ApplicationCommandEdit(s.State.User.ID, guildID, existingCommand.ID, newCommand)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("Error creating command %s", command.Name)
+			logger.Log.WithError(err).Error("Error updating addaccount command")
 			return
 		}
-
-		registeredCommands[i] = cmd
+	} else {
+		logger.Log.Info("Creating addaccount command")
+		_, err = s.ApplicationCommandCreate(s.State.User.ID, guildID, newCommand)
+		if err != nil {
+			logger.Log.WithError(err).Error("Error creating addaccount command")
+			return
+		}
 	}
 }
 
