@@ -24,8 +24,13 @@ func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to send daily update message for account named", account.Title)
 	}
-}
 
+	// Update the LastCheck timestamp
+	account.LastCheck = time.Now().Unix()
+	if err := database.DB.Save(&account).Error; err != nil {
+		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
+	}
+}
 func CheckAccounts(s *discordgo.Session) {
 	for {
 		logger.Log.Info("Starting periodic account check")
