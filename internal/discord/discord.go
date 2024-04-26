@@ -2,14 +2,14 @@ package discord
 
 import (
 	"errors"
-	"os"
-	"sbchecker/cmd/dcbot/commands/updateaccount"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
+	"os"
 	"sbchecker/cmd/dcbot/commands/accountage"
 	"sbchecker/cmd/dcbot/commands/accountlogs"
 	"sbchecker/cmd/dcbot/commands/addaccount"
 	"sbchecker/cmd/dcbot/commands/removeaccount"
+	"sbchecker/cmd/dcbot/commands/updateaccount"
 	"sbchecker/internal/logger"
 )
 

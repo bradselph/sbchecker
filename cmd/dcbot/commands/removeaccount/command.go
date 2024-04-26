@@ -115,14 +115,14 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 
 	// Delete associated bans
 	if err := tx.Unscoped().Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
-		logger.Log.WithError(err).Error("Error deleting associated bans for account %s", account.ID)
+		logger.Log.WithError(err).Error("Error deleting associated bans for account", account.ID)
 		tx.Rollback()
 		return
 	}
 
 	// Delete the account
 	if err := tx.Unscoped().Where("id = ?", account.ID).Delete(&models.Account{}).Error; err != nil {
-		logger.Log.WithError(err).Error("Error deleting account %s from database", account.ID)
+		logger.Log.WithError(err).Error("Error deleting account from database", account.ID)
 		tx.Rollback()
 		return
 	}
