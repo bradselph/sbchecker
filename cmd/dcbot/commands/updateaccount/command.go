@@ -82,13 +82,19 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 }
 
 func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 	userID := i.Member.User.ID
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
 
 	var account models.Account
-	result := database.DB.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
+	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
 	if result.Error != nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -101,8 +107,8 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	account.SSOCookie = newSSOCookie
-	database.DB.Save(&account)
-
+	tx.Save(&account)
+	tx.Commit()
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

@@ -22,7 +22,7 @@ func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
 		Embed: embed,
 	})
 	if err != nil {
-		logger.Log.WithError(err).Error("Failed to send daily update message for account named %s.", account.Title)
+		logger.Log.WithError(err).Error("Failed to send daily update message for account named", account.Title)
 	}
 }
 
@@ -44,12 +44,12 @@ func CheckAccounts(s *discordgo.Session) {
 			if time.Since(lastCheck).Minutes() > 15 {
 				go CheckSingleAccount(account, s)
 			} else {
-				logger.Log.WithField("account", account.Title).Info("Account %s checked recently, skipping", account.Title)
+				logger.Log.WithField("account", account.Title).Info("Account checked recently, skipping", account.Title)
 			}
 			if time.Since(lastCheck).Hours() > 24 {
 				go SendDailyUpdate(account, s)
 			} else {
-				logger.Log.WithField("account", account.Title).Info("Owner of Account Named %s recently notified within 24Hours already, skipping", account.Title)
+				logger.Log.WithField("account", account.Title).Info("Owner of Account Named recently notified within 24Hours already, skipping", account.Title)
 			}
 		}
 		time.Sleep(1 * time.Minute)
@@ -59,58 +59,46 @@ func CheckAccounts(s *discordgo.Session) {
 func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	result, err := CheckAccount(account.SSOCookie)
 	if err != nil {
-		logger.Log.WithError(err).Error("Failed to check account named %s", account.Title)
+		logger.Log.WithError(err).Error("Failed to check account named", account.Title)
 		return
 	}
 	lastStatus := account.LastStatus
 	account.LastCheck = time.Now().Unix()
 	if err := database.DB.Save(&account).Error; err != nil {
-		logger.Log.WithError(err).Error("Failed to save account changes for account named %s", account.Title)
+		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 		return
 	}
-	if result == lastStatus {
+	if result != lastStatus {
+		account.LastStatus = result
+		if err := database.DB.Save(&account).Error; err != nil {
+			logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
+			return
+		}
+		logger.Log.Infof("Account named %s status changed to %s", account.Title, result)
+		ban := models.Ban{
+			Account:   account,
+			Status:    result,
+			AccountID: account.ID,
+		}
+		if err := database.DB.Create(&ban).Error; err != nil {
+			logger.Log.WithError(err).Error("Failed to create new ban record for account named", account.Title)
+		}
 		embed := &discordgo.MessageEmbed{
 			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
-			Description: fmt.Sprintf("The status of account named %s has not changed", account.Title),
+			Description: fmt.Sprintf("The status of account named %s has changed to %s <@%s>", account.Title, result, account.UserID),
 			Color:       GetColorForBanStatus(result),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
 		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
-			Embed: embed,
+			Embed:   embed,
+			Content: fmt.Sprintf("<@%s>", account.UserID),
 		})
 		if err != nil {
-			logger.Log.WithError(err).Error("Failed to send status update message for account named %s", account.Title)
+			logger.Log.WithError(err).Error("Failed to send status update message for account named", account.Title)
 		}
-		return
-	}
-	account.LastStatus = result
-	if err := database.DB.Save(&account).Error; err != nil {
-		logger.Log.WithError(err).Error("Failed to save	account changes for account named %s", account.Title)
-		return
-	}
-	logger.Log.Infof("Account named %s status changed to %s", account.Title, result)
-	ban := models.Ban{
-		Account:   account,
-		Status:    result,
-		AccountID: account.ID,
-	}
-	if err := database.DB.Create(&ban).Error; err != nil {
-		logger.Log.WithError(err).Error("Failed to create new ban record for account named %s", account.Title)
-	}
-	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
-		Description: fmt.Sprintf("The status of account named %s has changed to %s <@%s>", account.Title, result, account.UserID),
-		Color:       GetColorForBanStatus(result),
-		Timestamp:   time.Now().Format(time.RFC3339),
-	}
-	_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
-		Embed:   embed,
-		Content: fmt.Sprintf("<@%s>", account.UserID),
-	})
-	if err != nil {
-		logger.Log.WithError(err).Error("Failed to send status update message for account named %s", account.Title)
 	}
 }
+
 func GetColorForBanStatus(status models.Status) int {
 	switch status {
 	case models.StatusPermaban:
@@ -121,6 +109,7 @@ func GetColorForBanStatus(status models.Status) int {
 		return 0x00ff00
 	}
 }
+
 func EmbedTitleFromStatus(status models.Status) string {
 	switch status {
 	case models.StatusPermaban:

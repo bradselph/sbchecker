@@ -1,10 +1,10 @@
 package bot
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"sbchecker/internal/discord"
 	"sbchecker/internal/logger"
-	"fmt"
 )
 
 func RunBot() (*discordgo.Session, error) {
