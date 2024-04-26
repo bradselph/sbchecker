@@ -1,16 +1,16 @@
 package discord
 
 import (
+	"errors"
 	"os"
 	"sbchecker/cmd/dcbot/commands/updateaccount"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
+	"sbchecker/cmd/dcbot/commands/accountage"
 	"sbchecker/cmd/dcbot/commands/accountlogs"
 	"sbchecker/cmd/dcbot/commands/addaccount"
 	"sbchecker/cmd/dcbot/commands/removeaccount"
 	"sbchecker/internal/logger"
-	"sbchecker/cmd/dcbot/commands/accountage"
 )
 
 var (
@@ -25,78 +25,66 @@ func Initialize() error {
 		logger.Log.WithError(err).Error("Error loading .env file")
 		return err
 	}
-
 	envToken := os.Getenv("DISCORD_TOKEN")
-
 	if envToken == "" {
-		logger.Log.WithField("env", "DISCORD_TOKEN").Error("Environment variable not set")
-
-		return nil
-	}
-
-	dc, err = discordgo.New("Bot " + envToken)
-	if err != nil {
-		logger.Log.WithError(err).Error("Error creating new Discord session")
+		err = errors.New("DISCORD_TOKEN environment variable not set")
+		logger.Log.WithError(err).WithField("env", "DISCORD_TOKEN").Error()
 		return err
 	}
-
+	dc, err = discordgo.New("Bot " + envToken)
+	if err != nil {
+		logger.Log.WithError(err).WithField("Bot startup", "Password").Error()
+		return err
+	}
 	return nil
 }
 
 func StartBot() (*discordgo.Session, error) {
 	err := dc.Open()
 	if err != nil {
-		logger.Log.WithError(err).Error("Error opening connection to Discord")
+		logger.Log.WithError(err).WithField("Bot startup", "Login").Error()
 		return nil, err
 	}
-
-	guilds, err := dc.UserGuilds(100, "", "")
+	guilds, err := dc.UserGuilds(100, "", "", false)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error getting guilds")
+		logger.Log.WithError(err).WithField("Bot startup", "Initiating Guilds").Error()
 		return nil, err
 	}
-
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
 		addaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["addaccount"] = addaccount.Command
+		commandHandlers["addaccount"] = addaccount.CommandAddAccount
 		removeaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["removeaccount"] = removeaccount.Command
+		commandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
 		accountlogs.RegisterCommand(dc, guild.ID)
-		commandHandlers["accountlogs"] = accountlogs.CheckAccountLogsCommand
+		commandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
 		updateaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["updateaccount"] = updateaccount.Command
+		commandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
 		accountage.RegisterCommand(dc, guild.ID)
-		commandHandlers["accountage"] = accountage.CheckAccountAgeCommand
+		commandHandlers["accountage"] = accountage.CommandAccountAge
 
 	}
-
 	dc.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		handler, ok := commandHandlers[i.ApplicationCommandData().Name]
 		if ok {
 			handler(s, i)
 		}
 	})
-
 	return dc, nil
 }
-
 func StopBot() error {
 	err := dc.Close()
 	if err != nil {
-		logger.Log.WithError(err).Error("Error closing connection to Discord")
+		logger.Log.WithError(err).WithField("Bot Shutdown", "Shutdown Process").Error()
 		return err
 	}
-
-	guilds, err := dc.UserGuilds(100, "", "")
+	guilds, err := dc.UserGuilds(100, "", "", false)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error getting guilds")
+		logger.Log.WithError(err).WithField("Bot Shutdown", "Disconnecting Guilds").Error()
 		return err
 	}
-
 	for _, guild := range guilds {
-		logger.Log.WithField("guild", guild.Name).Info("Disconnected from guild")
-
+		logger.Log.WithField("guild", guild.Name).Info("Disconnected from Guild")
 		addaccount.UnregisterCommand(dc, guild.ID)
 		removeaccount.UnregisterCommand(dc, guild.ID)
 		accountlogs.UnregisterCommand(dc, guild.ID)
@@ -104,10 +92,8 @@ func StopBot() error {
 		accountage.UnregisterCommand(dc, guild.ID)
 
 	}
-
 	return nil
 }
-
 func RestartBot() error {
 	if err := StopBot(); err != nil {
 		return err
