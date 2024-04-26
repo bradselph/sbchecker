@@ -81,7 +81,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-func CheckAccountAgeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 

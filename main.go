@@ -16,16 +16,16 @@ import (
 var instance *discordgo.Session
 
 func main() {
-	log.Println("Initializing logger")
+	log.Println("Bot starting...")
 	logger.Initialize()
-	logger.Log.Info("Initializing database connection")
+	logger.Log.Info("logger	initialized")
 	err := database.Initialize()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error initializing database")
 	}
 	instance, err = bot.RunBot()
 	if err != nil {
-		logger.Log.WithError(err).Error("Error running bot")
+		logger.Log.WithError(err).Error("Error starting bot")
 	}
 	logger.Log.Info("Bot is running")
 	instance.AddHandler(onGuildCreate)
@@ -38,9 +38,7 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	fmt.Println("Bot joined server:", guildID)
 	registerCommands(s, guildID)
-
 	restartBot()
-
 }
 func registerCommands(s *discordgo.Session, guildID string) {
 	fmt.Println("Registering commands for server:", guildID)
@@ -52,7 +50,7 @@ func restartBot() {
 	var err error
 	instance, err = bot.RunBot()
 	if err != nil {
-		logger.Log.WithError(err).Error("Error restarting bot")
+		logger.Log.WithError(err).Error("Error restarting bot after	closing session")
 		return
 	}
 	instance.AddHandler(onGuildCreate)

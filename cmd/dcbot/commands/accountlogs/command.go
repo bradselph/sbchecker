@@ -80,7 +80,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-func CheckAccountLogsCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 
