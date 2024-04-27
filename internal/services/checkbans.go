@@ -24,13 +24,13 @@ func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to send daily update message for account named", account.Title)
 	}
-
-	// Update the LastCheck timestamp
-	account.LastCheck = time.Now().Unix()
+	account.LastCheck = time.Now().Unix()        // set the LastCheck to current time.
+	account.LastNotification = time.Now().Unix() // set the LastNotification to current time.
 	if err := database.DB.Save(&account).Error; err != nil {
 		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 	}
 }
+
 func CheckAccounts(s *discordgo.Session) {
 	for {
 		logger.Log.Info("Starting periodic account check")
@@ -46,15 +46,19 @@ func CheckAccounts(s *discordgo.Session) {
 			if account.LastCheck != 0 {
 				lastCheck = time.Unix(account.LastCheck, 0)
 			}
+			var lastNotification time.Time
+			if account.LastNotification != 0 {
+				lastNotification = time.Unix(account.LastNotification, 0)
+			}
 			if time.Since(lastCheck).Minutes() > 15 {
 				go CheckSingleAccount(account, s)
 			} else {
-				logger.Log.WithField("account", account.Title).Info("Account checked recently, skipping", account.Title)
+				logger.Log.WithField("account", account.Title).Info("Account named", account.Title, "checked recently, skipping")
 			}
-			if time.Since(lastCheck).Hours() > 24 {
+			if time.Since(lastNotification).Hours() > 24 {
 				go SendDailyUpdate(account, s)
 			} else {
-				logger.Log.WithField("account", account.Title).Info("Owner of Account Named recently notified within 24Hours already, skipping", account.Title)
+				logger.Log.WithField("account", account.Title).Info("Owner of Account Named", account.Title, "recently notified within 24Hours already, skipping")
 			}
 		}
 		time.Sleep(1 * time.Minute)
