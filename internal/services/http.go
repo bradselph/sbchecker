@@ -40,7 +40,7 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	}
 	return resp.StatusCode, nil
 }
-func CheckAccount(ssoCookie string) (models.Status, error) {
+func checkAccount(ssoCookie string) (models.Status, error) {
 	req, err := http.NewRequest("GET", URL1, nil)
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
@@ -64,7 +64,7 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
+		return models.StatusUnknown, errors.New("failed to decode JSON response possible no response was received")
 	}
 	if len(data.Ban) == 0 {
 		return models.StatusGood, nil
