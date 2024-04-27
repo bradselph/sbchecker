@@ -25,7 +25,7 @@ const (
 	StatusPermaban      Status = "permaban"       // StatusPermaban indicates that the account has been permanently banned.
 	StatusShadowban     Status = "shadowban"      // StatusShadowban indicates that the account has been shadowbanned.
 	StatusUnknown       Status = "unknown"        // StatusUnknown indicates that the status of the account is unknown.
-	StatusInvalidCookie Status = "invalid_cookie" // StatusInvalidCookie indicates that the account has an invalid SSO cookie.
+	statusInvalidCookie Status = "invalid_cookie" // statusInvalidCookie indicates that the account has an invalid SSO cookie.
 
 )
 

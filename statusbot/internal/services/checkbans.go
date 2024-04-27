@@ -10,11 +10,11 @@ import (
 	"sbchecker/models"
 )
 
-func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
+func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("24 Hour Update - %s", account.Title),
 		Description: fmt.Sprintf("The last status of account named %s was %s. Your account is still being monitored.", account.Title, account.LastStatus),
-		Color:       GetColorForBanStatus(account.LastStatus),
+		Color:       getColorForBanStatus(account.LastStatus),
 		Timestamp:   time.Now().Format(time.RFC3339),
 	}
 
@@ -56,7 +56,7 @@ func CheckAccounts(s *discordgo.Session) {
 				logger.Log.WithField("account", account.Title).Info("Account named", account.Title, "checked recently, skipping")
 			}
 			if time.Since(lastNotification).Hours() > 24 {
-				go SendDailyUpdate(account, s)
+				go sendDailyUpdate(account, s)
 			} else {
 				logger.Log.WithField("account", account.Title).Info("Owner of Account Named", account.Title, "recently notified within 24Hours already, skipping")
 			}
@@ -93,9 +93,9 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			logger.Log.WithError(err).Error("Failed to create new ban record for account named", account.Title)
 		}
 		embed := &discordgo.MessageEmbed{
-			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
+			Title:       fmt.Sprintf("%s - %s", account.Title, embedTitleFromStatus(result)),
 			Description: fmt.Sprintf("The status of account named %s has changed to %s <@%s>", account.Title, result, account.UserID),
-			Color:       GetColorForBanStatus(result),
+			Color:       getColorForBanStatus(result),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
 		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
@@ -108,7 +108,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	}
 }
 
-func GetColorForBanStatus(status models.Status) int {
+func getColorForBanStatus(status models.Status) int {
 	switch status {
 	case models.StatusPermaban:
 		return 0xff0000
@@ -119,7 +119,7 @@ func GetColorForBanStatus(status models.Status) int {
 	}
 }
 
-func EmbedTitleFromStatus(status models.Status) string {
+func embedTitleFromStatus(status models.Status) string {
 	switch status {
 	case models.StatusPermaban:
 		return "PERMANENT BAN DETECTED"

@@ -72,7 +72,7 @@ func StartBot() (*discordgo.Session, error) {
 	})
 	return dc, nil
 }
-func StopBot() error {
+func stopBot() error {
 	err := dc.Close()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Shutdown", "Shutdown Process").Error()
@@ -94,8 +94,8 @@ func StopBot() error {
 	}
 	return nil
 }
-func RestartBot() error {
-	if err := StopBot(); err != nil {
+func restartBot() error {
+	if err := stopBot(); err != nil {
 		return err
 	}
 	if _, err := StartBot(); err != nil {
