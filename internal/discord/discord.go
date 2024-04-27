@@ -94,7 +94,7 @@ func StopBot() error {
 	}
 	return nil
 }
-func RestartBot() error {
+func restartBot() error {
 	if err := StopBot(); err != nil {
 		return err
 	}
