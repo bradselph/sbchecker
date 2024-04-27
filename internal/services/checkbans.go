@@ -66,7 +66,7 @@ func CheckAccounts(s *discordgo.Session) {
 }
 
 func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
-	result, err := CheckAccount(account.SSOCookie)
+	result, err := checkAccount(account.SSOCookie)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to check account named", account.Title)
 		return

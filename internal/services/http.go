@@ -3,7 +3,7 @@ package services
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -12,11 +12,11 @@ import (
 	"sbchecker/models"
 )
 
-var URL1 = "https://support.activision.com/api/bans/appeal?locale=en"
-var URL2 = "https://support.activision.com/api/profile?accts=false"
+var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
+var url2 = "https://support.activision.com/api/profile?accts=false"
 
 func VerifySSOCookie(ssoCookie string) (int, error) {
-	req, err := http.NewRequest("GET", URL1, nil)
+	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
 	}
@@ -30,7 +30,7 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 		return 0, errors.New("failed to send HTTP request to verify SSO cookie")
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error reading response body from verify SSO cookie request")
 		return 0, errors.New("failed to read response body from verify SSO cookie request")
@@ -40,8 +40,8 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	}
 	return resp.StatusCode, nil
 }
-func CheckAccount(ssoCookie string) (models.Status, error) {
-	req, err := http.NewRequest("GET", URL1, nil)
+func checkAccount(ssoCookie string) (models.Status, error) {
+	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
 	}
@@ -82,7 +82,7 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	return models.StatusUnknown, nil
 }
 func CheckAccountAge(ssoCookie string) (int, int, int, error) {
-	req, err := http.NewRequest("GET", URL2, nil)
+	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
 		return 0, 0, 0, errors.New("failed to create HTTP request to check account age")
 	}
