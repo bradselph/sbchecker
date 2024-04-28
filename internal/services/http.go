@@ -35,6 +35,7 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 		logger.Log.WithError(err).Error("Error reading response body from verify SSO cookie request")
 		return 0, errors.New("failed to read response body from verify SSO cookie request")
 	}
+
 	if string(body) == "" {
 		return 0, nil
 	}
