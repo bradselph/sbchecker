@@ -132,6 +132,7 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	account.SSOCookie = newSSOCookie
+	account.LastStatus = models.StatusUnknown // Reset the status to prevent further notifications
 	tx.Save(&account)
 	tx.Commit()
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
