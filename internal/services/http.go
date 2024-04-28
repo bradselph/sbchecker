@@ -66,6 +66,15 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to decode JSON response possible no response was received")
 	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error reading response body from check account request")
+		return models.StatusUnknown, errors.New("failed to read response body from check account request")
+	}
+	if string(body) == "" {
+		return models.StatusInvalidCookie, nil
+	}
+
 	if len(data.Ban) == 0 {
 		return models.StatusGood, nil
 	} else {

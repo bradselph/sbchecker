@@ -5,6 +5,7 @@ import (
 	"sbchecker/internal"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
+	"sbchecker/internal/services"
 	"sbchecker/models"
 )
 
@@ -92,6 +93,30 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
+
+	// Verify the new SSO cookie
+	statusCode, err := services.VerifySSOCookie(newSSOCookie)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Error verifying SSO cookie",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	if statusCode != 200 {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Invalid SSO cookie",
+				Flags:   64,
+			},
+		})
+		return
+	}
 
 	var account models.Account
 	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)

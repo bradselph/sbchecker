@@ -71,6 +71,35 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		logger.Log.WithError(err).Error("Failed to check account named ", account.Title, "possible expired SSO Cookie")
 		return
 	}
+
+	if result == models.StatusInvalidCookie {
+		cooldownDuration := 6 * time.Hour // Set the cooldown duration to 6 hours
+		lastNotification := time.Unix(account.LastCookieNotification, 0)
+		if time.Since(lastNotification) >= cooldownDuration || account.LastCookieNotification == 0 {
+			logger.Log.Infof("Account named %s has an invalid SSO cookie", account.Title)
+			embed := &discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("%s - Invalid SSO Cookie", account.Title),
+				Description: fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command.", account.Title),
+				Color:       0xff0000,
+				Timestamp:   time.Now().Format(time.RFC3339),
+			}
+			_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
+				Embed: embed,
+			})
+			if err != nil {
+				logger.Log.WithError(err).Error("Failed to send invalid cookie notification for account named", account.Title)
+			}
+
+			account.LastCookieNotification = time.Now().Unix() // Store the current time as the last notification time
+			if err := database.DB.Save(&account).Error; err != nil {
+				logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
+			}
+		} else {
+			logger.Log.Infof("Skipping expired cookie notification for account named %s (cooldown)", account.Title)
+		}
+		return
+	}
+
 	lastStatus := account.LastStatus
 	account.LastCheck = time.Now().Unix()
 	if err := database.DB.Save(&account).Error; err != nil {
