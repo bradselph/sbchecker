@@ -50,6 +50,17 @@ func CheckAccounts(s *discordgo.Session) {
 			if account.LastNotification != 0 {
 				lastNotification = time.Unix(account.LastNotification, 0)
 			}
+
+			if account.IsExpiredCookie { // Handle accounts with expired cookies
+				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie")
+				if time.Since(lastNotification).Hours() > 24 {
+					go SendDailyUpdate(account, s)
+				} else {
+					logger.Log.WithField("account", account.Title).Info("Owner of account named", account.Title, "recently notified within 24 hours, skipping")
+				}
+				continue
+			}
+
 			if time.Since(lastCheck).Minutes() > 15 {
 				go CheckSingleAccount(account, s)
 			} else {
@@ -73,13 +84,13 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	}
 
 	if result == models.StatusInvalidCookie {
-		cooldownDuration := 6 * time.Hour // Set the cooldown duration to 6 hours
+		cooldownDuration := 6 * time.Hour // Consider moving this to a constant or configuration variable
 		lastNotification := time.Unix(account.LastCookieNotification, 0)
 		if time.Since(lastNotification) >= cooldownDuration || account.LastCookieNotification == 0 {
 			logger.Log.Infof("Account named %s has an invalid SSO cookie", account.Title)
 			embed := &discordgo.MessageEmbed{
 				Title:       fmt.Sprintf("%s - Invalid SSO Cookie", account.Title),
-				Description: fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command.", account.Title),
+				Description: fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /deleteaccount command.", account.Title),
 				Color:       0xff0000,
 				Timestamp:   time.Now().Format(time.RFC3339),
 			}
@@ -91,6 +102,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			}
 
 			account.LastCookieNotification = time.Now().Unix() // Store the current time as the last notification time
+			account.IsExpiredCookie = true                     // Mark the account as having an expired cookie
 			if err := database.DB.Save(&account).Error; err != nil {
 				logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 			}
@@ -101,7 +113,9 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	}
 
 	lastStatus := account.LastStatus
+
 	account.LastCheck = time.Now().Unix()
+	account.IsExpiredCookie = false // Reset the expired cookie status if the account is successfully checked
 	if err := database.DB.Save(&account).Error; err != nil {
 		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 		return

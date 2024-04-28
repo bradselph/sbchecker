@@ -16,7 +16,7 @@ type Account struct {
 	LastCookieNotification int64  // LastCookieNotification represents the timestamp of the last notification sent out on the account for an expired ssocookie.
 	SSOCookie              string // SSOCookie represents the SSO cookie associated with the account.
 	Created                string // Created represents the timestamp of when the account was created.
-
+	IsExpiredCookie        bool   `gorm:"default:false"` // New field to track expired cookies
 }
 
 type Status string
