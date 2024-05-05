@@ -110,6 +110,22 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	// Verify the SSO cookie.
+	statusCode, err := services.VerifySSOCookie(account.SSOCookie)
+	if err != nil {
+		logger.Log.WithError(err).Errorf("Error verifying SSO cookie for account %s", account.Title)
+		// Handle the error case (e.g., send a notification to the user)
+		return
+	}
+
+	// If the status code is not 200, the SSO cookie is invalid.
+	if statusCode != 200 {
+		logger.Log.Errorf("Invalid SSO cookie for account %s", account.Title)
+		// Handle the invalid cookie case (e.g., send a notification to the user, mark the account as having an expired cookie)
+		return
+	}
+
+	// The SSO cookie is valid, proceed to check the account age.
 	// Check the age of the account.
 	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
 	if err != nil {

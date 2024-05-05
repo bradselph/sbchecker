@@ -1,20 +1,9 @@
 package help
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"os"
 	"sbchecker/internal/logger"
 )
-
-var username string
-
-func init() {
-	username = os.Getenv("HELP_USERNAME")
-	if username == "your-username" {
-		username = "No Name Has Been Set" // default value
-	}
-}
 
 // RegisterCommand registers the "help" command for a given guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
@@ -87,7 +76,7 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Create an embed for the response.
 	embed := &discordgo.MessageEmbed{
 		Title:       "Help",
-		Description: fmt.Sprintf("If you need help or have any issues, please message %s on Discord.", username),
+		Description: "If you need help or have any issues, please message Susplayer32 on Discord.",
 		Color:       0x00ff00,
 	}
 
