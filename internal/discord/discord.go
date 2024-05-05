@@ -58,7 +58,7 @@ func StartBot() (*discordgo.Session, error) {
 		return nil, err
 	}
 	// Set the bot's presence status
-	err = dc.UpdateWatchStatus(0, "Watching the Status of your Accounts so you dont have to.")
+	err = dc.UpdateWatchStatus(0, "the Status of your Accounts so you dont have to.")
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot startup", "Setting Presence Status").Error()
 		return nil, err
