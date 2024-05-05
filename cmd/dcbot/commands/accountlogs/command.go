@@ -9,11 +9,15 @@ import (
 	"sbchecker/models"
 )
 
+// choices holds the available options for the account logs command.
 var choices []*discordgo.ApplicationCommandOptionChoice
 
+// RegisterCommand registers the "accountlogs" command for a specific guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
+	// Get all choices for the guild.
 	choices = getAllChoices(guildID)
 
+	// Define the "accountlogs" command.
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "accountlogs",
@@ -30,12 +34,14 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		},
 	}
 
+	// Fetch existing application commands.
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
+	// Check if the "accountlogs" command already exists.
 	var existingCommand *discordgo.ApplicationCommand
 	for _, command := range existingCommands {
 		if command.Name == "accountlogs" {
@@ -46,6 +52,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 	newCommand := commands[0]
 
+	// If the command exists, update it. Otherwise, create a new one.
 	if existingCommand != nil {
 		logger.Log.Info("Updating accountlogs command")
 		_, err = s.ApplicationCommandEdit(s.State.User.ID, guildID, existingCommand.ID, newCommand)
@@ -63,13 +70,16 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
+// UnregisterCommand removes all application commands for a specific guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
+	// Fetch existing application commands.
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
+	// Delete each command.
 	for _, command := range commands {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
@@ -80,13 +90,17 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
+// CommandAccountLogs handles the "accountlogs" command.
 func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// Get the user ID and account ID from the interaction.
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 
+	// Fetch the account from the database.
 	var account models.Account
 	database.DB.Where("id = ?", accountId).First(&account)
 
+	// Check if the user owns the account.
 	if account.UserID != userID {
 		logger.Log.WithFields(map[string]interface{}{
 			"account_id": accountId,
@@ -95,9 +109,11 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	// Fetch the last 5 logs for the account.
 	var logs []models.Ban
 	database.DB.Where("account_id = ?", accountId).Order("created_at desc").Limit(5).Find(&logs)
 
+	// Create an embed for the logs.
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
 		Description: "The last 5 logs for this account",
@@ -105,6 +121,7 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Fields:      make([]*discordgo.MessageEmbedField, len(logs)),
 	}
 
+	// Add each log to the embed.
 	for i, log := range logs {
 		embed.Fields[i] = &discordgo.MessageEmbedField{
 			Name:   string(log.Status),
@@ -113,6 +130,7 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	// Respond to the interaction with the embed.
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -121,10 +139,13 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	})
 }
 
+// getAllChoices fetches all accounts for a guild and returns them as command choices.
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	// Fetch all accounts for the guild.
 	var accounts []models.Account
 	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
 
+	// Convert each account to a command choice.
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
 	for i, account := range accounts {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{

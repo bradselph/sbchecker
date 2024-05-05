@@ -12,9 +12,14 @@ import (
 	"sbchecker/models"
 )
 
+// URL for checking account bans or verifying SSO cookie
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
+
+// URL for checking account age
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
+// VerifySSOCookie verifies the SSO cookie by sending a GET request to url1
+// and returns the HTTP status code and an error if one occurred.
 func VerifySSOCookie(ssoCookie string) (int, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
@@ -41,6 +46,9 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	}
 	return resp.StatusCode, nil
 }
+
+// checkAccount checks the account status by sending a GET request to url1
+// and returns a models.Status and an error if one occurred.
 func checkAccount(ssoCookie string) (models.Status, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
@@ -91,6 +99,9 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 	}
 	return models.StatusUnknown, nil
 }
+
+// CheckAccountAge checks the account age by sending a GET request to url2
+// and returns the number of years, months, days, and an error if one occurred.
 func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {

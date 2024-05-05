@@ -2,11 +2,14 @@ package internal
 
 import (
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"sbchecker/internal/database"
 	"sbchecker/models"
+
+	"github.com/bwmarrin/discordgo"
 )
 
+// GenerateHeaders generates a map of HTTP headers used for making requests.
+// The headers include some default values and the ACT_SSO_COOKIE set to the provided ssoCookie value.
 func GenerateHeaders(ssoCookie string) map[string]string {
 	return map[string]string{
 		"accept":             "*/*",
@@ -23,12 +26,16 @@ func GenerateHeaders(ssoCookie string) map[string]string {
 	}
 }
 
+// GetAllChoices retrieves all account choices for a given guild ID from the database.
+// It returns a slice of discordgo.ApplicationCommandOptionChoice objects, where each choice represents an account.
 func GetAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
 	var accounts []models.Account
+	// Query the database to find all accounts with the given guild ID.
 	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
 
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
 	for i, account := range accounts {
+		// Create a new ApplicationCommandOptionChoice for each account.
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
 			Name:  account.Title,
 			Value: account.ID,
