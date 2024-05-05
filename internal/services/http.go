@@ -76,7 +76,7 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 	// Decode the JSON response
 	var data struct {
 		Error   string `json:"error"`
-		Success bool   `json:"success"`
+		Success string `json:"success"`
 		Ban     []struct {
 			Enforcement string `json:"enforcement"`
 			Title       string `json:"title"`
@@ -89,7 +89,7 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
 	}
 	// Check if the response indicates an error or success
-	if data.Error != "" || !data.Success {
+	if data.Error != "" || data.Success != "true" {
 		logger.Log.Errorf("Error checking account status: %s", data.Error)
 		return models.StatusUnknown, errors.New("error checking account status: " + data.Error)
 	}
