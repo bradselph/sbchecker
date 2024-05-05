@@ -1,6 +1,7 @@
 package help
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"os"
 	"sbchecker/internal/logger"
@@ -86,7 +87,7 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Create an embed for the response.
 	embed := &discordgo.MessageEmbed{
 		Title:       "Help",
-		Description: "If you need help or have any issues, please message " + username + " on Discord.",
+		Description: fmt.Sprintf("If you need help or have any issues, please message %s on Discord.", username),
 		Color:       0x00ff00,
 	}
 
