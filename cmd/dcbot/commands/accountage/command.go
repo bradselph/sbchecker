@@ -107,21 +107,42 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			"account_id": accountId,
 			"user_id":    userID,
 		}).Warn("User tried to check age for account they don't own")
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "You do not own this account.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
 	// Verify the SSO cookie.
+	// Handle the error case (e.g., send a notification to the user)
 	statusCode, err := services.VerifySSOCookie(account.SSOCookie)
 	if err != nil {
 		logger.Log.WithError(err).Errorf("Error verifying SSO cookie for account %s", account.Title)
-		// Handle the error case (e.g., send a notification to the user)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Error verifying SSO cookie.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
 	// If the status code is not 200, the SSO cookie is invalid.
+	// Handle the invalid cookie case (e.g., send a notification to the user, mark the account as having an expired cookie)
 	if statusCode != 200 {
 		logger.Log.Errorf("Invalid SSO cookie for account %s", account.Title)
-		// Handle the invalid cookie case (e.g., send a notification to the user, mark the account as having an expired cookie)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Invalid SSO cookie. Please update the cookie using the /updateaccount command.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
@@ -130,6 +151,13 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
 	if err != nil {
 		logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Error checking account age.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
