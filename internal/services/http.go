@@ -12,11 +12,8 @@ import (
 	"sbchecker/models"
 )
 
-// URL for checking account bans or verifying SSO cookie
-var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
-
-// URL for checking account age
-var url2 = "https://support.activision.com/api/profile?accts=false"
+var url1 = "https://support.activision.com/api/bans/appeal?locale=en" // URL for checking account bans or verifying SSO cookie
+var url2 = "https://support.activision.com/api/profile?accts=false"   // URL for checking account age
 
 // VerifySSOCookie verifies the SSO cookie by sending a GET request to url1
 // and returns the HTTP status code and an error if one occurred.
@@ -125,14 +122,17 @@ func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 		logger.Log.WithError(err).Error("Error decoding JSON response from check account age request")
 		return 0, 0, 0, errors.New("failed to decode JSON response from check account age request")
 	}
+
 	created, err := time.Parse(time.RFC3339, data.Created)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error parsing created date in check account age request")
 		return 0, 0, 0, errors.New("failed to parse created date in check account age request")
 	}
+
 	duration := time.Since(created)
 	years := int(duration.Hours() / 24 / 365)
 	months := int(duration.Hours()/24/30) % 12
 	days := int(duration.Hours()/24) % 365 % 30
+
 	return years, months, days, nil
 }

@@ -6,6 +6,7 @@ import (
 	"sbchecker/cmd/dcbot/commands/accountage"
 	"sbchecker/cmd/dcbot/commands/accountlogs"
 	"sbchecker/cmd/dcbot/commands/addaccount"
+	"sbchecker/cmd/dcbot/commands/help"
 	"sbchecker/cmd/dcbot/commands/removeaccount"
 	"sbchecker/cmd/dcbot/commands/updateaccount"
 	"sbchecker/internal/logger"
@@ -71,17 +72,7 @@ func StartBot() (*discordgo.Session, error) {
 	// Register commands for each guild
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-		addaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["addaccount"] = addaccount.CommandAddAccount
-		removeaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
-		accountlogs.RegisterCommand(dc, guild.ID)
-		commandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
-		updateaccount.RegisterCommand(dc, guild.ID)
-		commandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
-		accountage.RegisterCommand(dc, guild.ID)
-		commandHandlers["accountage"] = accountage.CommandAccountAge
-
+		registerCommands(dc, guild.ID)
 	}
 	// Add a handler for each command
 	dc.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -111,11 +102,7 @@ func StopBot() error {
 	// Unregister commands for each guild
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Disconnected from Guild")
-		addaccount.UnregisterCommand(dc, guild.ID)
-		removeaccount.UnregisterCommand(dc, guild.ID)
-		accountlogs.UnregisterCommand(dc, guild.ID)
-		updateaccount.UnregisterCommand(dc, guild.ID)
-		accountage.UnregisterCommand(dc, guild.ID)
+		unregisterCommands(dc, guild.ID)
 
 	}
 	return nil
@@ -132,4 +119,30 @@ func restartBot() error {
 		return err
 	}
 	return nil
+}
+
+// Register commands for each guild
+func registerCommands(s *discordgo.Session, guildID string) {
+	addaccount.RegisterCommand(s, guildID)
+	commandHandlers["addaccount"] = addaccount.CommandAddAccount
+	removeaccount.RegisterCommand(s, guildID)
+	commandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
+	accountlogs.RegisterCommand(s, guildID)
+	commandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
+	updateaccount.RegisterCommand(s, guildID)
+	commandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
+	accountage.RegisterCommand(s, guildID)
+	commandHandlers["accountage"] = accountage.CommandAccountAge
+	help.RegisterCommand(s, guildID)
+	commandHandlers["help"] = help.CommandHelp
+}
+
+// Unregister commands for each guild
+func unregisterCommands(s *discordgo.Session, guildID string) {
+	addaccount.UnregisterCommand(s, guildID)
+	removeaccount.UnregisterCommand(s, guildID)
+	accountlogs.UnregisterCommand(s, guildID)
+	updateaccount.UnregisterCommand(s, guildID)
+	accountage.UnregisterCommand(s, guildID)
+	help.UnregisterCommand(s, guildID)
 }

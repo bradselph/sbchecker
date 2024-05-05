@@ -44,7 +44,7 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	fmt.Println("Bot joined server:", guildID)
 	registerCommands(s, guildID) // Register commands for the server
-	restartBot()                 // Restart the botregisterCommands(s, guildID)
+	restartBot()                 // Restart the bot to register commands
 }
 
 // registerCommands registers commands for the specified server.
