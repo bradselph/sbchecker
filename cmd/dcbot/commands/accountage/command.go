@@ -138,7 +138,6 @@ func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
 	// Get all accounts for the guild from the database.
 	var accounts []models.Account
 	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-
 	// Create a list of choices from the accounts.
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
 	for i, account := range accounts {

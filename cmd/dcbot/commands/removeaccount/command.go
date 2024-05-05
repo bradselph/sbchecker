@@ -119,7 +119,6 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		tx.Rollback()
 		return
 	}
-
 	// Disable foreign key constraints.
 	err := tx.Exec("SET FOREIGN_KEY_CHECKS=0;").Error
 	if err != nil {

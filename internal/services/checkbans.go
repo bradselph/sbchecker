@@ -2,13 +2,23 @@ package services
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/joho/godotenv"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		logger.Log.WithError(err).Error("Failed to load .env file")
+	}
+}
 
 // SendDailyUpdate sends a daily update to the Discord channel associated with the given account.
 func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
@@ -66,7 +76,8 @@ func CheckAccounts(s *discordgo.Session) {
 			// Handle accounts with expired cookies.
 			if account.IsExpiredCookie {
 				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie")
-				if time.Since(lastNotification).Hours() > 24 {
+				notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
+				if time.Since(lastNotification).Hours() > notificationInterval {
 					go SendDailyUpdate(account, s)
 				} else {
 					logger.Log.WithField("account", account.Title).Info("Owner of account named", account.Title, "recently notified within 24 hours, skipping")
@@ -75,14 +86,16 @@ func CheckAccounts(s *discordgo.Session) {
 			}
 
 			// Check the account if it hasn't been checked in the last 15 minutes.
-			if time.Since(lastCheck).Minutes() > 15 {
+			checkInterval, _ := strconv.ParseFloat(os.Getenv("CHECK_INTERVAL"), 64)
+			if time.Since(lastCheck).Minutes() > checkInterval {
 				go CheckSingleAccount(account, s)
 			} else {
 				logger.Log.WithField("account", account.Title).Info("Account named", account.Title, "checked recently, skipping")
 			}
 
 			// Send a daily update if the account hasn't been notified in the last 24 hours.
-			if time.Since(lastNotification).Hours() > 24 {
+			notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
+			if time.Since(lastNotification).Hours() > notificationInterval {
 				go SendDailyUpdate(account, s)
 			} else {
 				logger.Log.WithField("account", account.Title).Info("Owner of Account Named", account.Title, "recently notified within 24Hours already, skipping")
@@ -90,7 +103,8 @@ func CheckAccounts(s *discordgo.Session) {
 		}
 
 		// Wait for 1 minute before checking again.
-		time.Sleep(1 * time.Minute)
+		sleepDuration, _ := strconv.Atoi(os.Getenv("SLEEP_DURATION"))
+		time.Sleep(time.Duration(sleepDuration) * time.Minute)
 	}
 }
 
@@ -108,9 +122,9 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	// If the account has an invalid cookie, send a notification and update the
 	// account's LastCookieNotification and IsExpiredCookie fields in the database.
 	if result == models.StatusInvalidCookie {
-		cooldownDuration := 6 * time.Hour // Consider moving this to a constant or configuration variable
+		cooldownDuration, _ := strconv.ParseFloat(os.Getenv("COOLDOWN_DURATION"), 64)
 		lastNotification := time.Unix(account.LastCookieNotification, 0)
-		if time.Since(lastNotification) >= cooldownDuration || account.LastCookieNotification == 0 {
+		if time.Since(lastNotification) >= time.Duration(cooldownDuration)*time.Hour || account.LastCookieNotification == 0 {
 			logger.Log.Infof("Account named %s has an invalid SSO cookie", account.Title)
 			embed := &discordgo.MessageEmbed{
 				Title:       fmt.Sprintf("%s - Invalid SSO Cookie", account.Title),
