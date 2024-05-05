@@ -61,17 +61,9 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 		return models.StatusUnknown, errors.New("failed to send HTTP request to check account")
 	}
 	defer resp.Body.Close()
-	var data struct {
-		Ban []struct {
-			Enforcement string `json:"enforcement"`
-			Title       string `json:"title"`
-			CanAppeal   bool   `json:"canAppeal"`
-		} `json:"bans"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&data)
-	if err != nil {
-		return models.StatusUnknown, errors.New("failed to decode JSON response possible no response was received")
-	}
+
+	// Read the response body and check for an empty response
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error reading response body from check account request")
@@ -81,6 +73,28 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 		return models.StatusInvalidCookie, nil
 	}
 
+	// Decode the JSON response
+	var data struct {
+		Error   string `json:"error"`
+		Success bool   `json:"success"`
+		Ban     []struct {
+			Enforcement string `json:"enforcement"`
+			Title       string `json:"title"`
+			CanAppeal   bool   `json:"canAppeal"`
+		} `json:"bans"`
+	}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error decoding JSON response from check account request")
+		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
+	}
+	// Check if the response indicates an error or success
+	if data.Error != "" || !data.Success {
+		logger.Log.Errorf("Error checking account status: %s", data.Error)
+		return models.StatusUnknown, errors.New("error checking account status: " + data.Error)
+	}
+
+	// Check the ban status based on the response
 	if len(data.Ban) == 0 {
 		return models.StatusGood, nil
 	} else {
