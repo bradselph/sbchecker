@@ -13,21 +13,31 @@ import (
 	"sbchecker/models"
 )
 
+var notificationInterval string // Global variable to store the notification interval
+
 func init() {
 	err := godotenv.Load()
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to load .env file")
 	}
+	notificationInterval = os.Getenv("NOTIFICATION_INTERVAL") // Read the NOTIFICATION_INTERVAL environment variable
 }
 
 // SendDailyUpdate sends a daily update to the Discord channel associated with the given account.
 func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
-	// Create a new Discord message embed with the account's title, last status,
-	// and a color based on the ban status.
+	var description string
+	if account.IsExpiredCookie {
+		description = fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command.", account.Title)
+	} else {
+		description = fmt.Sprintf("The last status of account named %s was %s.", account.Title, account.LastStatus)
+	}
+
+	// Create a new Discord message embed with the account's title, description,
+	// and a color based on the ban status or cookie validity.
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("24 Hour Update - %s", account.Title),
-		Description: fmt.Sprintf("The last status of account named %s was %s. Your account is still being monitored.", account.Title, account.LastStatus),
-		Color:       GetColorForBanStatus(account.LastStatus),
+		Title:       fmt.Sprintf("%s Hour Update - %s", notificationInterval, account.Title),
+		Description: description,
+		Color:       GetColorForStatus(account.LastStatus, account.IsExpiredCookie),
 		Timestamp:   time.Now().Format(time.RFC3339),
 	}
 
@@ -176,7 +186,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		embed := &discordgo.MessageEmbed{
 			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
 			Description: fmt.Sprintf("The status of account named %s has changed to %s <@%s>", account.Title, result, account.UserID),
-			Color:       GetColorForBanStatus(result),
+			Color:       GetColorForStatus(result, account.IsExpiredCookie),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
 		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
@@ -189,15 +199,18 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	}
 }
 
-// GetColorForBanStatus returns a color code based on the ban status.
-func GetColorForBanStatus(status models.Status) int {
+// GetColorForStatus returns a color code based on the account's status or cookie validity.
+func GetColorForStatus(status models.Status, isExpiredCookie bool) int {
+	if isExpiredCookie {
+		return 0xff0000 // Red for expired cookie
+	}
 	switch status {
 	case models.StatusPermaban:
-		return 0xff0000
+		return 0xff0000 // Red for permanent ban
 	case models.StatusShadowban:
-		return 0xffff00
+		return 0xffff00 // Yellow for shadowban
 	default:
-		return 0x00ff00
+		return 0x00ff00 // Green for no ban
 	}
 }
 
