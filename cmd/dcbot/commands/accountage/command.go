@@ -93,13 +93,17 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 
 // CommandAccountAge handles the "accountage" command.
 func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logger.Log.Info("Starting account age command")
+
 	// Get the user ID and account ID from the interaction.
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
+	logger.Log.Infof("User ID: %s, Account ID: %d", userID, accountId)
 
 	// Get the account from the database.
 	var account models.Account
 	database.DB.Where("id = ?", accountId).First(&account)
+	logger.Log.Infof("Account: %+v", account)
 
 	// If the account does not belong to the user, log a warning and return.
 	if account.UserID != userID {
