@@ -20,8 +20,6 @@ var instance *discordgo.Session
 // It also sets up a signal capture to handle interruptions and terminations.
 func main() {
 	log.Println("Bot starting...")
-	logger.Initialize() // Initialize the logger
-	logger.Log.Info("logger	initialized")
 	err := database.Initialize() // Initialize the database
 	if err != nil {
 		logger.Log.WithError(err).Error("Error initializing database")
