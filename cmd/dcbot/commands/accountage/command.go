@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"sbchecker/internal"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/internal/services"
@@ -16,7 +17,7 @@ var choices []*discordgo.ApplicationCommandOptionChoice
 // RegisterCommand registers the "accountage" command for a given guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	// Get all account choices for the guild.
-	choices = getAllChoices(guildID)
+	choices = internal.GetAllChoices(guildID)
 
 	// Define the "accountage" command.
 	commands := []*discordgo.ApplicationCommand{
@@ -151,7 +152,6 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	// The SSO cookie is valid, proceed to check the account age.
-	// Check the age of the account.
 	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
 	if err != nil {
 		logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
@@ -179,21 +179,4 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Embeds: []*discordgo.MessageEmbed{embed},
 		},
 	})
-}
-
-// getAllChoices gets all account choices for a given guild.
-func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	// Get all accounts for the guild from the database.
-	var accounts []models.Account
-	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-	// Create a list of choices from the accounts.
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
 }

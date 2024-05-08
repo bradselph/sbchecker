@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"sbchecker/internal"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
@@ -15,7 +16,7 @@ var choices []*discordgo.ApplicationCommandOptionChoice
 // RegisterCommand registers the "accountlogs" command for a specific guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	// Get all choices for the guild.
-	choices = getAllChoices(guildID)
+	choices = internal.GetAllChoices(guildID)
 
 	// Define the "accountlogs" command.
 	commands := []*discordgo.ApplicationCommand{
@@ -92,13 +93,17 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 
 // CommandAccountLogs handles the "accountlogs" command.
 func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logger.Log.Info("Received accountlogs command")
+
 	// Get the user ID and account ID from the interaction.
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
+	logger.Log.Infof("User ID: %s, Account ID: %d", userID, accountId)
 
 	// Fetch the account from the database.
 	var account models.Account
 	database.DB.Where("id = ?", accountId).First(&account)
+	logger.Log.Infof("Account: %+v", account)
 
 	// Check if the user owns the account.
 	if account.UserID != userID {
@@ -137,22 +142,4 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Embeds: []*discordgo.MessageEmbed{embed},
 		},
 	})
-}
-
-// getAllChoices fetches all accounts for a guild and returns them as command choices.
-func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	// Fetch all accounts for the guild.
-	var accounts []models.Account
-	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-
-	// Convert each account to a command choice.
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
 }

@@ -73,6 +73,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 
 // CommandHelp handles the "help" command.
 func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logger.Log.Info("Received help command")
 	// Create an embed for the response.
 	embed := &discordgo.MessageEmbed{
 		Title:       "Help",
@@ -85,6 +86,7 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{embed},
+			Flags:  64, // Ephemeral response (only visible to the user who used the command)
 		},
 	})
 }

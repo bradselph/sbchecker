@@ -14,7 +14,7 @@ var choices []*discordgo.ApplicationCommandOptionChoice
 // RegisterCommand registers the "removeaccount" command in the Discord session for a specific guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	// Fetch all choices for the guild.
-	choices = getAllChoices(guildID)
+	choices = internal.GetAllChoices(guildID)
 
 	// Define the command and its options.
 	commands := []*discordgo.ApplicationCommand{
@@ -91,10 +91,12 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 
 // CommandRemoveAccount handles the "removeaccount" command when invoked.
 func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logger.Log.Info("Starting remove account command")
 	// Extract the user ID, guild ID, and account ID from the interaction.
 	userID := i.Member.User.ID
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
+	logger.Log.Infof("User ID: %s, Guild ID: %s  Account ID: %d", userID, guildID, accountId)
 
 	// Begin a database transaction.
 	tx := database.DB.Begin()
@@ -153,20 +155,17 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 
 	// Update the choices for the "removeaccount" command.
 	UpdateAccountChoices(s, guildID)
-
 	// Commit the transaction.
 	tx.Commit()
-}
-
-// getAllChoices fetches all choices for a specific guild.
-func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	return internal.GetAllChoices(guildID)
+	logger.Log.Info("Account removed successfully")
 }
 
 // UpdateAccountChoices updates the choices for the "removeaccount" command and other related commands.
 func UpdateAccountChoices(s *discordgo.Session, guildID string) {
+	logger.Log.Info("Updating account choices")
+
 	// Fetch all choices for the guild.
-	choices = getAllChoices(guildID)
+	choices = internal.GetAllChoices(guildID)
 
 	// Fetch existing commands.
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)

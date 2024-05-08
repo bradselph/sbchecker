@@ -3,10 +3,11 @@ package database
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
 	"sbchecker/internal/logger"
 	"sbchecker/models"
 )

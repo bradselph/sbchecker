@@ -94,6 +94,8 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 // CommandUpdateAccount handles the "updateaccount" command interaction.
 // It updates the SSO cookie for a specific account.
 func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logger.Log.Info("Received updateaccount command")
+
 	// Start a new database transaction
 	tx := database.DB.Begin()
 	defer func() {
@@ -108,6 +110,7 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
+	logger.Log.Infof("User ID: %s, Guild ID: %s Account ID: %d, New SSO Cookie: %s", userID, guildID, accountId, newSSOCookie)
 
 	// Verify the new SSO cookie
 	statusCode, err := services.VerifySSOCookie(newSSOCookie)
@@ -151,6 +154,8 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	// Update the account's SSO cookie and status
 	account.SSOCookie = newSSOCookie
 	account.LastStatus = models.StatusUnknown // Reset the status to prevent further notifications
+	account.IsExpiredCookie = false           // Reset the expired cookie flag to prevent further notifications
+	account.LastCookieNotification = 0        // Reset the last cookie notification timestamp to prevent further notifications
 	tx.Save(&account)
 	tx.Commit()
 
