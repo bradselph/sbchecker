@@ -3,6 +3,7 @@ package discord
 import (
 	"errors"
 	"os"
+
 	"sbchecker/cmd/dcbot/commands/accountage"
 	"sbchecker/cmd/dcbot/commands/accountlogs"
 	"sbchecker/cmd/dcbot/commands/addaccount"
@@ -109,6 +110,8 @@ func StopBot() error {
 }
 
 // restartBot function restarts the Discord bot by stopping and starting it
+//
+//goland:noinspection GoUnusedFunction
 func restartBot() error {
 	// Stop the bot
 	if err := StopBot(); err != nil {

@@ -93,11 +93,9 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Invoked addaccount command")
 
-	// Extract the command options.
+	// Extract the command options guild, channel, and user IDs.
 	title := i.ApplicationCommandData().Options[0].StringValue()
 	ssoCookie := i.ApplicationCommandData().Options[1].StringValue()
-
-	// Extract the guild, channel, and user IDs.
 	guildID := i.GuildID
 	channelID := i.ChannelID
 	userID := i.Member.User.ID
@@ -136,7 +134,6 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	// Verify the SSO cookie and create the account in a separate goroutine.
 	go func() {
-		// Verify the SSO cookie.
 		statusCode, err := services.VerifySSOCookie(ssoCookie)
 		if err != nil {
 			// If there's an error, respond with an ephemeral message.

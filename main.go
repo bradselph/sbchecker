@@ -5,11 +5,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
+
 	bot "sbchecker/cmd/dcbot"
 	"sbchecker/internal/database"
 	"sbchecker/internal/logger"
 	"sbchecker/internal/services"
-	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -46,6 +47,8 @@ func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 }
 
 // registerCommands registers commands for the specified server.
+//
+//goland:noinspection GoUnusedParameter
 func registerCommands(s *discordgo.Session, guildID string) {
 	fmt.Println("Registering commands for server:", guildID)
 }
