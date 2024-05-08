@@ -114,8 +114,10 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 // CheckAccountAge checks the account age by sending a GET request to url2
 // and returns the number of years, months, days, and an error if one occurred.
 func CheckAccountAge(ssoCookie string) (int, int, int, error) {
+	logger.Log.Info("Starting CheckAccountAge function")
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
+		logger.Log.WithError(err).Error("Error creating HTTP request to check account age")
 		return 0, 0, 0, errors.New("failed to create HTTP request to check account age")
 	}
 	headers := internal.GenerateHeaders(ssoCookie)
