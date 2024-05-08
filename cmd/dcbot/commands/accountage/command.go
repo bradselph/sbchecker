@@ -95,7 +95,14 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 // CommandAccountAge handles the "accountage" command.
 func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Starting account age command")
-
+	// Acknowledge the command immediately with a deferred response.
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Error("Error sending deferred response")
+		return
+	}
 	// Get the user ID and account ID from the interaction.
 	userID := i.Member.User.ID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
