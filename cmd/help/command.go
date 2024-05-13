@@ -1,8 +1,9 @@
 package help
 
 import (
+	"codstatusbot/internal/logger"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal/logger"
 )
 
 // RegisterCommand registers the "help" command for a given guild.

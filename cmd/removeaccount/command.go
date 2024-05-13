@@ -1,11 +1,11 @@
 package removeaccount
 
 import (
+	"codstatusbot/internal"
+	"codstatusbot/internal/logger"
+	"codstatusbot/models"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
 )
 
 // choices holds the choices for the "removeaccount" command.

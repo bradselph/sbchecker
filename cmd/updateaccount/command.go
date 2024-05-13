@@ -2,11 +2,11 @@ package updateaccount
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
+
+	"codstatusbot/internal"
+	"codstatusbot/internal/logger"
+	"codstatusbot/internal/services"
+	"codstatusbot/models"
 )
 
 // RegisterCommand registers the "updateaccount" command in the Discord session.
