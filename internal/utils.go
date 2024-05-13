@@ -2,10 +2,6 @@ package internal
 
 import (
 	"fmt"
-
-	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal/database"
-	"sbchecker/models"
 )
 
 func GenerateHeaders(ssoCookie string) map[string]string {
@@ -22,21 +18,4 @@ func GenerateHeaders(ssoCookie string) map[string]string {
 		"cookie":             fmt.Sprintf("ACT_SSO_COOKIE=%s", ssoCookie),
 		"Referrer-Policy":    "strict-origin-when-cross-origin",
 	}
-}
-
-func GetAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	var accounts []models.Account
-	// Query the database to find all accounts with the given guild ID.
-	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		// Create a new ApplicationCommandOptionChoice for each account.
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
 }

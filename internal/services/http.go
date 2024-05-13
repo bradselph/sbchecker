@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"sbchecker/internal"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
+	"codstatusbot/internal"
+	"codstatusbot/internal/logger"
+	"codstatusbot/models"
 )
 
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en" // URL for checking account bans or verifying SSO cookie

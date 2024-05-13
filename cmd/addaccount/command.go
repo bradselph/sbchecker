@@ -1,12 +1,12 @@
 package addaccount
 
 import (
+	"codstatusbot/cmd/removeaccount"
+	"codstatusbot/internal/logger"
+	"codstatusbot/internal/services"
+	"codstatusbot/models"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/cmd/dcbot/commands/removeaccount"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
 )
 
 // RegisterCommand registers the "addaccount" command in the Discord session for a specific guild.

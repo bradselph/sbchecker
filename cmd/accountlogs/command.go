@@ -3,11 +3,11 @@ package accountlogs
 import (
 	"fmt"
 
+	"codstatusbot/internal"
+	"codstatusbot/internal/logger"
+	"codstatusbot/models"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
 )
 
 // choices holds the available options for the account logs command.

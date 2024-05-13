@@ -3,12 +3,12 @@ package accountage
 import (
 	"fmt"
 
+	"codstatusbot/internal"
+	"codstatusbot/internal/logger"
+	"codstatusbot/internal/services"
+	"codstatusbot/models"
+
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
 )
 
 // choices holds the list of account choices.

@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
+	"codstatusbot/internal/logger"
+	"codstatusbot/models"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
 )
 
 var notificationInterval string // Global variable to store the notification interval
