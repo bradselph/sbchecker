@@ -1,8 +1,9 @@
-package accountlogs
+package commands
 
 import (
 	"fmt"
 
+	"codstatusbot/database"
 	"codstatusbot/internal"
 	"codstatusbot/internal/logger"
 	"codstatusbot/models"

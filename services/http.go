@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"encoding/json"
@@ -14,12 +14,13 @@ import (
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en" // URL for checking account bans or verifying SSO cookie
 var url2 = "https://support.activision.com/api/profile?accts=false"   // URL for checking account age
 
-func verifySSOCookie(ssoCookie string) (int, error) {
+// VerifySSOCookie verifies the SSO cookie by sending a GET request to the Activision API.
+func VerifySSOCookie(ssoCookie string) (int, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
 	}
-	headers := generateHeaders(ssoCookie)
+	headers := GenerateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -41,12 +42,13 @@ func verifySSOCookie(ssoCookie string) (int, error) {
 	return resp.StatusCode, nil
 }
 
-func checkAccount(ssoCookie string) (models.Status, error) {
+// CheckAccount checks the account status by sending a GET request to the Activision API.
+func CheckAccount(ssoCookie string) (models.Status, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
 	}
-	headers := generateHeaders(ssoCookie)
+	headers := GenerateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -99,14 +101,15 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 	return models.StatusUnknown, nil
 }
 
-func checkAccountAge(ssoCookie string) (int, int, int, error) {
+// CheckAccountAge checks the account age by sending a GET request to the Activision API and parsing the created date.
+func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	logger.Log.Info("Starting CheckAccountAge function")
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error creating HTTP request to check account age")
 		return 0, 0, 0, errors.New("failed to create HTTP request to check account age")
 	}
-	headers := generateHeaders(ssoCookie)
+	headers := GenerateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}

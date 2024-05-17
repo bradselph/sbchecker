@@ -1,18 +1,17 @@
-package updateaccount
+package commands
 
 import (
 	"github.com/bwmarrin/discordgo"
 
-	"codstatusbot/internal"
-	"codstatusbot/internal/logger"
-	"codstatusbot/internal/services"
+	"codstatusbot/database"
+	"codstatusbot/logger"
 	"codstatusbot/models"
+	"codstatusbot/services"
 )
 
 // RegisterCommand registers the "updateaccount" command in the Discord session.
 // It creates or updates the command based on its existence.
 func RegisterCommand(s *discordgo.Session, guildID string) {
-	// Define the command with its options
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "updateaccount",
@@ -23,7 +22,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     internal.GetAllChoices(guildID), // Use the GetAllChoices function to get all account choices
+					Choices:     services.GetAllChoices(guildID),
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
@@ -35,14 +34,12 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		},
 	}
 
-	// Fetch existing commands
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
-	// Check if the "updateaccount" command already exists
 	var existingCommand *discordgo.ApplicationCommand
 	for _, command := range existingCommands {
 		if command.Name == "updateaccount" {
@@ -53,7 +50,6 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 	newCommand := commands[0]
 
-	// If the command exists, update it. Otherwise, create a new one.
 	if existingCommand != nil {
 		logger.Log.Info("Updating updateaccount command")
 		_, err = s.ApplicationCommandEdit(s.State.User.ID, guildID, existingCommand.ID, newCommand)
@@ -73,14 +69,12 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 // UnregisterCommand deletes all commands from the Discord session.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
-	// Fetch existing commands
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
-	// Delete each command
 	for _, command := range commands {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
@@ -96,23 +90,19 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Received updateaccount command")
 
-	// Start a new database transaction
 	tx := database.DB.Begin()
 	defer func() {
-		// Rollback the transaction in case of panic
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
 
-	// Extract data from the interaction
 	userID := i.Member.User.ID
 	guildID := i.GuildID
-	accountId := i.ApplicationCommandData().Options[0].IntValue()
+	accountID := i.ApplicationCommandData().Options[0].IntValue()
 	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
-	logger.Log.Infof("User ID: %s, Guild ID: %s Account ID: %d, New SSO Cookie: %s", userID, guildID, accountId, newSSOCookie)
+	logger.Log.Infof("User ID: %s, Guild ID: %s Account ID: %d, New SSO Cookie: %s", userID, guildID, accountID, newSSOCookie)
 
-	// Verify the new SSO cookie
 	statusCode, err := services.VerifySSOCookie(newSSOCookie)
 	if err != nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -125,7 +115,6 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	// Check if the SSO cookie is valid
 	if statusCode != 200 {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -137,21 +126,19 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	// Fetch the account from the database
 	var account models.Account
-	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
+	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountID, guildID).First(&account)
 	if result.Error != nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Account does not exist",
-				Flags:   64, // Set ephemeral flag
+				Flags:   64,
 			},
 		})
 		return
 	}
 
-	// Update the account's SSO cookie and status
 	account.SSOCookie = newSSOCookie
 	account.LastStatus = models.StatusUnknown // Reset the status to prevent further notifications
 	account.IsExpiredCookie = false           // Reset the expired cookie flag to prevent further notifications
@@ -159,12 +146,11 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	tx.Save(&account)
 	tx.Commit()
 
-	// Respond to the interaction
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Account SSO cookie updated",
-			Flags:   64, // Set ephemeral flag
+			Flags:   64,
 		},
 	})
 }

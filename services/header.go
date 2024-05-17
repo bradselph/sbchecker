@@ -1,10 +1,11 @@
-package main
+package services
 
 import (
 	"fmt"
 )
 
-func generateHeaders(ssoCookie string) map[string]string {
+// GenerateHeaders generates the headers for the request to the Activision API.
+func GenerateHeaders(ssoCookie string) map[string]string {
 	return map[string]string{
 		"accept":             "*/*",
 		"accept-language":    "en-US,en;q=0.9,es;q=0.8",

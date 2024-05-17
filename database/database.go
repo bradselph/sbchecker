@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"codstatusbot/models"
@@ -15,7 +15,8 @@ import (
 // DB is the main database connection handle
 var DB *gorm.DB
 
-func databaselogin() error {
+// Databaselogin connects to the database using the environment variables.
+func Databaselogin() error {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")

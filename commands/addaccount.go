@@ -1,10 +1,10 @@
-package addaccount
+package commands
 
 import (
-	"codstatusbot/cmd/removeaccount"
+	"codstatusbot/database"
 	"codstatusbot/internal/logger"
-	"codstatusbot/internal/services"
 	"codstatusbot/models"
+	"codstatusbot/services"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -92,15 +92,12 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 // CommandAddAccount handles the "addaccount" command when invoked.
 func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Invoked addaccount command")
-
-	// Extract the command options guild, channel, and user IDs.
 	title := i.ApplicationCommandData().Options[0].StringValue()
 	ssoCookie := i.ApplicationCommandData().Options[1].StringValue()
 	guildID := i.GuildID
 	channelID := i.ChannelID
 	userID := i.Member.User.ID
 
-	// Log the command details.
 	logger.Log.WithFields(map[string]interface{}{
 		"title":      title,
 		"sso_cookie": ssoCookie,
@@ -109,11 +106,9 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		"user_id":    userID,
 	}).Info("Add account command")
 
-	// Check if the account already exists in the database.
 	var account models.Account
 	result := database.DB.Where("user_id = ? AND title = ?", userID, title).First(&account)
 	if result.Error == nil {
-		// If the account exists, respond with an ephemeral message.
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -124,7 +119,6 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	// Respond with a deferred ephemeral message.
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -132,61 +126,50 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 
-	// Verify the SSO cookie and create the account in a separate goroutine.
-	go func() {
-		statusCode, err := services.VerifySSOCookie(ssoCookie)
-		if err != nil {
-			// If there's an error, respond with an ephemeral message.
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Error verifying SSO cookie",
-			})
-			return
-		}
-
-		// Log the verification status.
-		logger.Log.WithField("status_code", statusCode).Info("SSO cookie verification status")
-
-		// If the status code is not 200, the SSO cookie is invalid.
-		if statusCode != 200 {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid SSO cookie",
-			})
-			return
-		}
-
-		// Create the account.
-		account = models.Account{
-			UserID:    userID,
-			Title:     title,
-			SSOCookie: ssoCookie,
-			GuildID:   guildID,
-			ChannelID: channelID,
-		}
-
-		// Save the account to the database.
-		result := database.DB.Create(&account)
-		if result.Error != nil {
-			// If there's an error, log it and respond with an ephemeral message.
-			logger.Log.WithError(result.Error).Error("Error creating account")
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Error creating account",
-			})
-			return
-		}
-
-		// Respond with an ephemeral message indicating success.
+	statusCode, err := services.VerifySSOCookie(ssoCookie)
+	if err != nil {
 		s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
 			Flags:   discordgo.MessageFlagsEphemeral,
-			Content: "Account added",
+			Content: "Error verifying SSO cookie",
 		})
+		return
+	}
 
-		// Update the account choices for the "removeaccount" command.
-		removeaccount.UpdateAccountChoices(s, guildID)
+	logger.Log.WithField("status_code", statusCode).Info("SSO cookie verification status")
+	if statusCode != 200 {
+		s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: "Invalid SSO cookie",
+		})
+		return
+	}
 
-		// Check the account for shadowbans.
-		go services.CheckSingleAccount(account, s)
-	}()
+	account = models.Account{
+		UserID:    userID,
+		Title:     title,
+		SSOCookie: ssoCookie,
+		GuildID:   guildID,
+		ChannelID: channelID,
+	}
+
+	result = database.DB.Create(&account)
+	if result.Error != nil {
+		logger.Log.WithError(result.Error).Error("Error creating account")
+		s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: "Error creating account",
+		})
+		return
+	}
+
+	s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+		Flags:   discordgo.MessageFlagsEphemeral,
+		Content: "Account added",
+	})
+
+	// Update the account choices for the "removeaccount" command.
+	removeaccount.UpdateAccountChoices(s, guildID)
+
+	// Check the account for shadowbans.
+	services.CheckSingleAccount(account, s)
 }
