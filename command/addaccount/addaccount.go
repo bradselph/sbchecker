@@ -1,6 +1,7 @@
 package addaccount
 
 import (
+	"codstatusbot/command/removeaccount"
 	"codstatusbot/database"
 	"codstatusbot/logger"
 	"codstatusbot/models"
@@ -11,7 +12,6 @@ import (
 
 // RegisterCommand registers the "addaccount" command in the Discord session for a specific guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
-	// Define the command and its options.
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "addaccount",
@@ -33,14 +33,12 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		},
 	}
 
-	// Fetch existing commands.
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
-	// Check if the "addaccount" command already exists.
 	var existingCommand *discordgo.ApplicationCommand
 	for _, command := range existingCommands {
 		if command.Name == "addaccount" {
@@ -51,7 +49,6 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 	newCommand := commands[0]
 
-	// If the command exists, update it. Otherwise, create a new one.
 	if existingCommand != nil {
 		logger.Log.Info("Updating addaccount command")
 		_, err = s.ApplicationCommandEdit(s.State.User.ID, guildID, existingCommand.ID, newCommand)
@@ -71,14 +68,12 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 // UnregisterCommand removes all application commands from the Discord session for a specific guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
-	// Fetch existing commands.
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
 		return
 	}
 
-	// Delete each command.
 	for _, command := range commands {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
@@ -170,6 +165,5 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Update the account choices for the "removeaccount" command.
 	removeaccount.UpdateAccountChoices(s, guildID)
 
-	// Check the account for shadowbans.
-	services.CheckSingleAccount(account, s)
+	go services.CheckSingleAccount(account, s)
 }

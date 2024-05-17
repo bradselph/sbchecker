@@ -50,7 +50,6 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 
 // UnregisterCommand deletes all application commands for a given guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
-	// Get existing application commands for the guild.
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
