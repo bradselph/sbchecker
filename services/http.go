@@ -11,16 +11,18 @@ import (
 	"codstatusbot/models"
 )
 
-var url1 = "https://support.activision.com/api/bans/appeal?locale=en" // URL for checking account bans or verifying SSO cookie
-var url2 = "https://support.activision.com/api/profile?accts=false"   // URL for checking account age
+var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
+var url2 = "https://support.activision.com/api/profile?accts=false"
 
 // VerifySSOCookie verifies the SSO cookie by sending a GET request to the Activision API.
 func VerifySSOCookie(ssoCookie string) (int, error) {
+	logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
 	}
 	headers := GenerateHeaders(ssoCookie)
+	logger.Log.Info("Creating headers")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -32,7 +34,6 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error reading response body from verify SSO cookie request")
 		return 0, errors.New("failed to read response body from verify SSO cookie request")
 	}
 
@@ -44,11 +45,13 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 
 // CheckAccount checks the account status by sending a GET request to the Activision API.
 func CheckAccount(ssoCookie string) (models.Status, error) {
+	logger.Log.Info("Starting CheckAccount function")
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
 	}
 	headers := GenerateHeaders(ssoCookie)
+	logger.Log.Info("Creating headers")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -61,7 +64,6 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error reading response body from check account request")
 		return models.StatusUnknown, errors.New("failed to read response body from check account request")
 	}
 	if string(body) == "" {
@@ -79,11 +81,9 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error decoding JSON response from check account request")
 		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
 	}
 	if data.Error != "" || data.Success != "true" {
-		logger.Log.Errorf("Error checking account status: %s", data.Error)
 		return models.StatusUnknown, errors.New("error checking account status: " + data.Error)
 	}
 	if len(data.Ban) == 0 {
@@ -106,10 +106,10 @@ func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	logger.Log.Info("Starting CheckAccountAge function")
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error creating HTTP request to check account age")
 		return 0, 0, 0, errors.New("failed to create HTTP request to check account age")
 	}
 	headers := GenerateHeaders(ssoCookie)
+	logger.Log.Info("Creating headers")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -124,13 +124,11 @@ func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error decoding JSON response from check account age request")
 		return 0, 0, 0, errors.New("failed to decode JSON response from check account age request")
 	}
 
 	created, err := time.Parse(time.RFC3339, data.Created)
 	if err != nil {
-		logger.Log.WithError(err).Error("Error parsing created date in check account age request")
 		return 0, 0, 0, errors.New("failed to parse created date in check account age request")
 	}
 

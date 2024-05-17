@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"codstatusbot/commands"
+	"codstatusbot/command"
 	"codstatusbot/database"
 	"codstatusbot/logger"
 	"codstatusbot/services"
@@ -47,6 +47,7 @@ func main() {
 }
 
 func loadEnvironmentVariables() error {
+	logger.Log.Info("Loading environment variables...")
 	err := godotenv.Load()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error loading .env file")
@@ -89,7 +90,7 @@ func startBot() error {
 
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-		commands.RegisterCommands(session, guild.ID)
+		command.RegisterCommand(session, guild.ID)
 	}
 
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -126,6 +127,7 @@ func stopBot() error {
 }
 
 func restartBot() error {
+	logger.Log.Info("Restarting bot")
 	err := stopBot()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error stopping bot")
@@ -145,12 +147,12 @@ func restartBot() error {
 func OnGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	logger.Log.WithField("guild", guildID).Info("Bot joined server:")
-	commands.RegisterCommands(s, guildID)
+	command.RegisterCommand(s, guildID)
 }
 
 // OnGuildDelete is called when the bot leaves a guild.
 func OnGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
 	guildID := event.Guild.ID
 	logger.Log.WithField("guild", guildID).Info("Bot left guild")
-	commands.UnregisterCommands(s, guildID)
+	command.UnregisterCommand(s, guildID)
 }
