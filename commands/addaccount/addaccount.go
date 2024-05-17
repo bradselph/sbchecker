@@ -1,8 +1,8 @@
-package commands
+package addaccount
 
 import (
 	"codstatusbot/database"
-	"codstatusbot/internal/logger"
+	"codstatusbot/logger"
 	"codstatusbot/models"
 	"codstatusbot/services"
 

@@ -1,4 +1,4 @@
-package commands
+package help
 
 import (
 	"codstatusbot/logger"
@@ -6,8 +6,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// RegisterCommands registers the "help" command for a given guild.
-func RegisterCommands(s *discordgo.Session, guildID string) {
+// RegisterCommand registers the "help" command for a given guild.
+func RegisterCommand(s *discordgo.Session, guildID string) {
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "help",
@@ -48,8 +48,8 @@ func RegisterCommands(s *discordgo.Session, guildID string) {
 	}
 }
 
-// UnregisterCommands deletes all application commands for a given guild.
-func UnregisterCommands(s *discordgo.Session, guildID string) {
+// UnregisterCommand deletes all application commands for a given guild.
+func UnregisterCommand(s *discordgo.Session, guildID string) {
 	// Get existing application commands for the guild.
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {

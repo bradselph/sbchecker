@@ -1,4 +1,4 @@
-package commands
+package updateaccount
 
 import (
 	"github.com/bwmarrin/discordgo"

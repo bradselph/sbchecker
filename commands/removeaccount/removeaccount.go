@@ -1,4 +1,4 @@
-package commands
+package removeaccount
 
 import (
 	"codstatusbot/database"
