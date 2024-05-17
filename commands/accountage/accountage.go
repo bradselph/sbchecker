@@ -1,4 +1,4 @@
-package commands
+package accountage
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ var choices []*discordgo.ApplicationCommandOptionChoice
 // RegisterCommand registers the "accountage" command for a given guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	// Get all account choices for the guild.
-	choices = utils.GetAllChoices(guildID)
+	choices = services.GetAllChoices(guildID)
 
 	// Define the "accountage" command.
 	commands := []*discordgo.ApplicationCommand{
