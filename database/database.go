@@ -17,6 +17,7 @@ var DB *gorm.DB
 
 // Databaselogin connects to the database using the environment variables.
 func Databaselogin() error {
+	logger.Log.Info("Connecting to database...")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")

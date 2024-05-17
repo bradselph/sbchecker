@@ -11,10 +11,6 @@ github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqw
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
 github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
-github.com/gregoryv/draw v0.33.0 h1:i6g4YE5RJY/wilc3MAu1xyj5j54HEgEH9MLmGj0g6Ug=
-github.com/gregoryv/draw v0.33.0/go.mod h1:xBuLxilM7AJpaMAkqjVF4+cbNS2rXh9EDObIewDhaWg=
-github.com/gregoryv/nexus v0.6.0 h1:d53Ug7bIWyJqxKnd2c9n3qPpYunwglq9cmNNzNJewFY=
-github.com/gregoryv/nexus v0.6.0/go.mod h1:DJ2Ia6WpPX26edFW6LCl+9nYyX2h6Ot/kyJ83J+SAL0=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=

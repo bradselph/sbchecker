@@ -1,12 +1,12 @@
 package command
 
 import (
-	"codstatusbot/commands/accountage"
-	"codstatusbot/commands/accountlogs"
-	"codstatusbot/commands/addaccount"
-	"codstatusbot/commands/help"
-	"codstatusbot/commands/removeaccount"
-	"codstatusbot/commands/updateaccount"
+	"codstatusbot/command/accountage"
+	"codstatusbot/command/accountlogs"
+	"codstatusbot/command/addaccount"
+	"codstatusbot/command/help"
+	"codstatusbot/command/removeaccount"
+	"codstatusbot/command/updateaccount"
 	"codstatusbot/logger"
 
 	"github.com/bwmarrin/discordgo"

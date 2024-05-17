@@ -13,7 +13,7 @@ type Account struct {
 	Title                  string // The title of the account.
 	LastStatus             Status `gorm:"default:unknown"` // The last known status of the account.
 	LastCheck              int64  `gorm:"default:0"`       // The timestamp of the last check performed on the account.
-	LastNotification       int64  // The timestamp of the last 24-hour notification sent out on the account.
+	LastNotification       int64  // The timestamp of the last daily notification sent out on the account.
 	LastCookieNotification int64  // The timestamp of the last notification sent out on the account for an expired ssocookie.
 	SSOCookie              string // The SSO cookie associated with the account.
 	Created                string // The timestamp of when the account was created on activision.
