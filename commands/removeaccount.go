@@ -1,6 +1,7 @@
-package removeaccount
+package commands
 
 import (
+	"codstatusbot/database"
 	"codstatusbot/internal"
 	"codstatusbot/internal/logger"
 	"codstatusbot/models"

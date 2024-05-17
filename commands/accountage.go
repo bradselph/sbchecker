@@ -1,4 +1,4 @@
-package accountage
+package commands
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"codstatusbot/logger"
 	"codstatusbot/models"
 	"codstatusbot/services"
-	"codstatusbot/utils"
 
 	"github.com/bwmarrin/discordgo"
 )

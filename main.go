@@ -6,14 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"codstatusbot/cmd/accountage"
-	"codstatusbot/cmd/accountlogs"
-	"codstatusbot/cmd/addaccount"
-	"codstatusbot/cmd/help"
-	"codstatusbot/cmd/removeaccount"
-	"codstatusbot/cmd/updateaccount"
+	"codstatusbot/commands"
+	"codstatusbot/database"
 	"codstatusbot/logger"
-	"codstatusbot/models"
+	"codstatusbot/services"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
@@ -29,7 +25,7 @@ func main() {
 		logger.Log.WithError(err).WithField("Bot Startup", "Environment Variables").Error()
 		os.Exit(1)
 	}
-	err = databaselogin()
+	err = database.Databaselogin()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Databaselogin").Error()
 		os.Exit(1)
@@ -93,7 +89,7 @@ func startBot() error {
 
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-		RegisterCommands(session, guild.ID)
+		commands.RegisterCommands(session, guild.ID)
 	}
 
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -103,9 +99,9 @@ func startBot() error {
 		}
 	})
 
-	session.AddHandler(onGuildCreate)
-	session.AddHandler(onGuildDelete)
-	// go services.CheckAccounts(session)
+	session.AddHandler(OnGuildCreate)
+	session.AddHandler(OnGuildDelete)
+	go services.CheckAccounts(session)
 
 	return nil
 }
@@ -145,56 +141,16 @@ func restartBot() error {
 	return nil
 }
 
-// RegisterCommands registers all command handlers for a specific guild.
-func RegisterCommands(s *discordgo.Session, guildID string) {
-	addaccount.RegisterCommand(s, guildID)
-	commandHandlers["addaccount"] = addaccount.CommandAddAccount
-	removeaccount.RegisterCommand(s, guildID)
-	commandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
-	accountlogs.RegisterCommand(s, guildID)
-	commandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
-	updateaccount.RegisterCommand(s, guildID)
-	commandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
-	accountage.RegisterCommand(s, guildID)
-	commandHandlers["accountage"] = accountage.CommandAccountAge
-	help.RegisterCommand(s, guildID)
-	commandHandlers["help"] = help.CommandHelp
-}
-
-// UnregisterCommands unregisters all command handlers for a specific guild.
-func UnregisterCommands(s *discordgo.Session, guildID string) {
-	addaccount.UnregisterCommand(s, guildID)
-	removeaccount.UnregisterCommand(s, guildID)
-	accountlogs.UnregisterCommand(s, guildID)
-	updateaccount.UnregisterCommand(s, guildID)
-	accountage.UnregisterCommand(s, guildID)
-	help.UnregisterCommand(s, guildID)
-}
-
-func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
+// OnGuildCreate is called when the bot joins a guild.
+func OnGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 	guildID := event.Guild.ID
 	logger.Log.WithField("guild", guildID).Info("Bot joined server:")
-	RegisterCommands(s, guildID)
+	commands.RegisterCommands(s, guildID)
 }
 
-func onGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
+// OnGuildDelete is called when the bot leaves a guild.
+func OnGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
 	guildID := event.Guild.ID
 	logger.Log.WithField("guild", guildID).Info("Bot left guild")
-	UnregisterCommands(s, guildID)
-}
-
-// GetAllChoices returns all choices for the account select dropdown.
-func GetAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	var accounts []models.Account
-	DB.Where("guild_id = ?", guildID).Find(&accounts)
-
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
+	commands.UnregisterCommands(s, guildID)
 }
