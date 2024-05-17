@@ -3,10 +3,11 @@ package accountage
 import (
 	"fmt"
 
-	"codstatusbot/internal"
-	"codstatusbot/internal/logger"
-	"codstatusbot/internal/services"
+	"codstatusbot/database"
+	"codstatusbot/logger"
 	"codstatusbot/models"
+	"codstatusbot/services"
+	"codstatusbot/utils"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -17,7 +18,7 @@ var choices []*discordgo.ApplicationCommandOptionChoice
 // RegisterCommand registers the "accountage" command for a given guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	// Get all account choices for the guild.
-	choices = internal.GetAllChoices(guildID)
+	choices = utils.GetAllChoices(guildID)
 
 	// Define the "accountage" command.
 	commands := []*discordgo.ApplicationCommand{

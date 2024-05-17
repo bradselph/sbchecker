@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,46 +12,41 @@ import (
 	"codstatusbot/cmd/help"
 	"codstatusbot/cmd/removeaccount"
 	"codstatusbot/cmd/updateaccount"
-	"codstatusbot/internal/logger"
-	"codstatusbot/internal/services"
+	"codstatusbot/logger"
 	"codstatusbot/models"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
-var (
-	DB              *gorm.DB
-	dc              *discordgo.Session
-	commandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
-	instance        *discordgo.Session
-)
+var session *discordgo.Session
+var commandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
 func main() {
 	logger.Log.Info("Bot starting...")
 	err := loadEnvironmentVariables()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Environment Variables").Error()
+		os.Exit(1)
 	}
 	err = databaselogin()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Databaselogin").Error()
+		os.Exit(1)
 	}
-	instance, err = discordlogin()
+	err = startBot()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Discordlogin").Error()
+		os.Exit(1)
 	}
 	logger.Log.Info("Bot is running")
-	instance.AddHandler(onGuildCreate)
-	go services.CheckAccounts(instance)
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
-	err = StopBot()
+	err = stopBot()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Shutdown", "Shutdown Process").Error()
+		os.Exit(1)
 	}
 }
 
@@ -65,162 +59,94 @@ func loadEnvironmentVariables() error {
 	return nil
 }
 
-
-		logger.Log.Info("Bot is running")
-		instance.AddHandler(onGuildCreate)
-		go services.CheckAccounts(instance)
-		sc := make(chan os.Signal, 1)
-		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-		<-sc
-		StopBot()
-	}
-
-
-func databaselogin() error {
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-	dbVar := os.Getenv("DB_VAR")
-
-	if dbUser == "" || dbPassword == "" || dbHost == "" || dbPort == "" || dbName == "" || dbVar == "" {
-		err = errors.New("one or more environment variables for database not set or missing")
-		logger.Log.WithError(err).WithField("Bot Startup", "database variables").Error()
-		return err
-	}
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbVar)
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		logger.Log.WithError(err).WithField("Bot Startup", "Mysql Config").Error()
-		return err
-	}
-
-	DB = db
-
-	err = DB.AutoMigrate(&models.Account{}, &models.Ban{})
-	if err != nil {
-		logger.Log.WithError(err).WithField("Bot Startup", "Database Models Problem").Error()
-		return err
-	}
-
-	return nil
-}
-
-func discordlogin() error {
+func startBot() error {
 	envToken := os.Getenv("DISCORD_TOKEN")
 	if envToken == "" {
-		err = errors.New("DISCORD_TOKEN environment variable not set")
+		err := errors.New("DISCORD_TOKEN environment variable not set")
 		logger.Log.WithError(err).WithField("env", "DISCORD_TOKEN").Error()
 		return err
 	}
-
-	dc, err = discordgo.New("Bot " + envToken)
+	var err error
+	session, err = discordgo.New("Bot " + envToken)
 	if err != nil {
-		logger.Log.WithError(err).WithField("Bot startup", "Password").Error()
+		logger.Log.WithError(err).WithField("Bot startup", "Token").Error()
 		return err
 	}
 
-	return nil
-}
-
-func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
-	guildID := event.Guild.ID
-	fmt.Println("Bot joined server:", guildID)
-	registerCommands(s, guildID)
-}
-
-func StartBot() (*discordgo.Session, error) {
-	err := dc.Open()
+	err = session.Open()
 	if err != nil {
-		logger.Log.WithError(err).WithField("Bot startup", "Login").Error()
-		return nil, err
+		logger.Log.WithError(err).WithField("Bot startup", "Opening Session").Error()
+		return err
 	}
 
-	err = dc.UpdateWatchStatus(0, "the Status of your Accounts so you dont have to.")
+	err = session.UpdateWatchStatus(0, "the Status of your Accounts so you dont have to.")
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot startup", "Setting Presence Status").Error()
-		return nil, err
+		return err
 	}
 
-	guilds, err := dc.UserGuilds(100, "", "", false)
+	guilds, err := session.UserGuilds(100, "", "", false)
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot startup", "Initiating Guilds").Error()
-		return nil, err
+		return err
 	}
 
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-		registerCommands(dc, guild.ID)
+		RegisterCommands(session, guild.ID)
 	}
 
-	dc.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		handler, ok := commandHandlers[i.ApplicationCommandData().Name]
 		if ok {
 			handler(s, i)
 		}
 	})
 
-	return dc, nil
+	session.AddHandler(onGuildCreate)
+	session.AddHandler(onGuildDelete)
+	// go services.CheckAccounts(session)
+
+	return nil
 }
 
-func StopBot() error {
-	err := dc.Close()
-	if err != nil {
-		logger.Log.WithError(err).WithField("Bot Shutdown", "Shutdown Process").Error()
-		return err
-	}
-
-	guilds, err := dc.UserGuilds(100, "", "", false)
+func stopBot() error {
+	logger.Log.Info("Bot is shutting down")
+	guilds, err := session.UserGuilds(100, "", "", false)
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Shutdown", "Disconnecting Guilds").Error()
 		return err
 	}
-
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Disconnected from Guild")
-		unregisterCommands(dc, guild.ID)
 
+	}
+	err = session.Close()
+	if err != nil {
+		logger.Log.WithError(err).WithField("Bot Shutdown", "Closing Session").Error()
+		return err
 	}
 	return nil
 }
 
-func RestartBot() error {
-	err := StopBot()
+func restartBot() error {
+	err := stopBot()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error stopping bot")
 		return err
 	}
 
-	instance, err = StartBot()
+	err = startBot()
 	if err != nil {
 		logger.Log.WithError(err).Error("Error starting bot")
 		return err
 	}
-
-	instance.AddHandler(onGuildCreate)
 	logger.Log.Info("Bot restarted successfully")
 	return nil
 }
 
-func GetAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	var accounts []models.Account
-	DB.Where("guild_id = ?", guildID).Find(&accounts)
-
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
-	for i, account := range accounts {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  account.Title,
-			Value: account.ID,
-		}
-	}
-
-	return choices
-}
-
-func registerCommands(s *discordgo.Session, guildID string) {
+// RegisterCommands registers all command handlers for a specific guild.
+func RegisterCommands(s *discordgo.Session, guildID string) {
 	addaccount.RegisterCommand(s, guildID)
 	commandHandlers["addaccount"] = addaccount.CommandAddAccount
 	removeaccount.RegisterCommand(s, guildID)
@@ -235,11 +161,40 @@ func registerCommands(s *discordgo.Session, guildID string) {
 	commandHandlers["help"] = help.CommandHelp
 }
 
-func unregisterCommands(s *discordgo.Session, guildID string) {
+// UnregisterCommands unregisters all command handlers for a specific guild.
+func UnregisterCommands(s *discordgo.Session, guildID string) {
 	addaccount.UnregisterCommand(s, guildID)
 	removeaccount.UnregisterCommand(s, guildID)
 	accountlogs.UnregisterCommand(s, guildID)
 	updateaccount.UnregisterCommand(s, guildID)
 	accountage.UnregisterCommand(s, guildID)
 	help.UnregisterCommand(s, guildID)
+}
+
+func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
+	guildID := event.Guild.ID
+	logger.Log.WithField("guild", guildID).Info("Bot joined server:")
+	RegisterCommands(s, guildID)
+}
+
+func onGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
+	guildID := event.Guild.ID
+	logger.Log.WithField("guild", guildID).Info("Bot left guild")
+	UnregisterCommands(s, guildID)
+}
+
+// GetAllChoices returns all choices for the account select dropdown.
+func GetAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	var accounts []models.Account
+	DB.Where("guild_id = ?", guildID).Find(&accounts)
+
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
+	for i, account := range accounts {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  account.Title,
+			Value: account.ID,
+		}
+	}
+
+	return choices
 }

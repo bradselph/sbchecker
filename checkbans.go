@@ -1,4 +1,4 @@
-package services
+package main
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"codstatusbot/internal/logger"
+	"codstatusbot/logger"
 	"codstatusbot/models"
 
 	"github.com/bwmarrin/discordgo"
@@ -37,7 +37,7 @@ func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("%s Hour Update - %s", notificationInterval, account.Title),
 		Description: description,
-		Color:       GetColorForStatus(account.LastStatus, account.IsExpiredCookie),
+		Color:       getColorForStatus(account.LastStatus, account.IsExpiredCookie),
 		Timestamp:   time.Now().Format(time.RFC3339),
 	}
 
@@ -52,7 +52,7 @@ func SendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	// Update the account's LastCheck and LastNotification fields in the database.
 	account.LastCheck = time.Now().Unix()        // set the LastCheck to current time.
 	account.LastNotification = time.Now().Unix() // set the LastNotification to current time.
-	if err := database.DB.Save(&account).Error; err != nil {
+	if err := DB.Save(&account).Error; err != nil {
 		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 	}
 }
@@ -66,7 +66,7 @@ func CheckAccounts(s *discordgo.Session) {
 
 		// Fetch all accounts from the database.
 		var accounts []models.Account
-		if err := database.DB.Find(&accounts).Error; err != nil {
+		if err := DB.Find(&accounts).Error; err != nil {
 			logger.Log.WithError(err).Error("Failed to fetch accounts from the database")
 			continue
 		}
@@ -98,7 +98,7 @@ func CheckAccounts(s *discordgo.Session) {
 			// Check the account if it hasn't been checked in the last 15 minutes.
 			checkInterval, _ := strconv.ParseFloat(os.Getenv("CHECK_INTERVAL"), 64)
 			if time.Since(lastCheck).Minutes() > checkInterval {
-				go CheckSingleAccount(account, s)
+				go checkSingleAccount(account, s)
 			} else {
 				logger.Log.WithField("account", account.Title).Info("Account named", account.Title, "checked recently, skipping")
 			}
@@ -121,7 +121,7 @@ func CheckAccounts(s *discordgo.Session) {
 // CheckSingleAccount checks the status of a single account and sends a notification
 // if the status has changed. It also updates the account's LastCheck and IsExpiredCookie
 // fields in the database.
-func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
+func checkSingleAccount(account models.Account, discord *discordgo.Session) {
 	// Check the account's status.
 	result, err := checkAccount(account.SSOCookie)
 	if err != nil {
@@ -151,7 +151,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 
 			account.LastCookieNotification = time.Now().Unix() // Store the current time as the last notification time
 			account.IsExpiredCookie = true                     // Mark the account as having an expired cookie
-			if err := database.DB.Save(&account).Error; err != nil {
+			if err := DB.Save(&account).Error; err != nil {
 				logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 			}
 		} else {
@@ -164,13 +164,13 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 
 	account.LastCheck = time.Now().Unix()
 	account.IsExpiredCookie = false // Reset the expired cookie status if the account is successfully checked
-	if err := database.DB.Save(&account).Error; err != nil {
+	if err := DB.Save(&account).Error; err != nil {
 		logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 		return
 	}
 	if result != lastStatus {
 		account.LastStatus = result
-		if err := database.DB.Save(&account).Error; err != nil {
+		if err := DB.Save(&account).Error; err != nil {
 			logger.Log.WithError(err).Error("Failed to save account changes for account named", account.Title)
 			return
 		}
@@ -180,13 +180,13 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			Status:    result,
 			AccountID: account.ID,
 		}
-		if err := database.DB.Create(&ban).Error; err != nil {
+		if err := DB.Create(&ban).Error; err != nil {
 			logger.Log.WithError(err).Error("Failed to create new ban record for account named", account.Title)
 		}
 		embed := &discordgo.MessageEmbed{
-			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
+			Title:       fmt.Sprintf("%s - %s", account.Title, embedTitleFromStatus(result)),
 			Description: fmt.Sprintf("The status of account named %s has changed to %s <@%s>", account.Title, result, account.UserID),
-			Color:       GetColorForStatus(result, account.IsExpiredCookie),
+			Color:       getColorForStatus(result, account.IsExpiredCookie),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
 		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
@@ -200,7 +200,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 }
 
 // GetColorForStatus returns a color code based on the account's status or cookie validity.
-func GetColorForStatus(status models.Status, isExpiredCookie bool) int {
+func getColorForStatus(status models.Status, isExpiredCookie bool) int {
 	if isExpiredCookie {
 		return 0xff0000 // Red for expired cookie
 	}
@@ -215,7 +215,7 @@ func GetColorForStatus(status models.Status, isExpiredCookie bool) int {
 }
 
 // EmbedTitleFromStatus returns a string title based on the ban status.
-func EmbedTitleFromStatus(status models.Status) string {
+func embedTitleFromStatus(status models.Status) string {
 	switch status {
 	case models.StatusPermaban:
 		return "PERMANENT BAN DETECTED"

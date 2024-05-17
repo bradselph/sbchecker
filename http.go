@@ -1,4 +1,4 @@
-package services
+package main
 
 import (
 	"encoding/json"
@@ -7,22 +7,19 @@ import (
 	"net/http"
 	"time"
 
-	"codstatusbot/internal"
-	"codstatusbot/internal/logger"
+	"codstatusbot/logger"
 	"codstatusbot/models"
 )
 
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en" // URL for checking account bans or verifying SSO cookie
 var url2 = "https://support.activision.com/api/profile?accts=false"   // URL for checking account age
 
-// VerifySSOCookie verifies the SSO cookie by sending a GET request to url1
-// and returns the HTTP status code and an error if one occurred.
-func VerifySSOCookie(ssoCookie string) (int, error) {
+func verifySSOCookie(ssoCookie string) (int, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
 	}
-	headers := internal.GenerateHeaders(ssoCookie)
+	headers := generateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -44,14 +41,12 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	return resp.StatusCode, nil
 }
 
-// checkAccount checks the account status by sending a GET request to url1
-// and returns a models.Status and an error if one occurred.
 func checkAccount(ssoCookie string) (models.Status, error) {
 	req, err := http.NewRequest("GET", url1, nil)
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
 	}
-	headers := internal.GenerateHeaders(ssoCookie)
+	headers := generateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -62,8 +57,6 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read the response body and check for an empty response
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error reading response body from check account request")
@@ -73,7 +66,6 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 		return models.StatusInvalidCookie, nil
 	}
 
-	// Decode the JSON response
 	var data struct {
 		Error   string `json:"error"`
 		Success string `json:"success"`
@@ -88,39 +80,33 @@ func checkAccount(ssoCookie string) (models.Status, error) {
 		logger.Log.WithError(err).Error("Error decoding JSON response from check account request")
 		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
 	}
-	// Check if the response indicates an error or success
 	if data.Error != "" || data.Success != "true" {
 		logger.Log.Errorf("Error checking account status: %s", data.Error)
 		return models.StatusUnknown, errors.New("error checking account status: " + data.Error)
 	}
-
-	// Check the ban status based on the response
 	if len(data.Ban) == 0 {
 		return models.StatusGood, nil
-	} else {
-		for _, ban := range data.Ban {
-			if ban.Enforcement == "PERMANENT" {
-				return models.StatusPermaban, nil
-			} else if ban.Enforcement == "UNDER_REVIEW" {
-				return models.StatusShadowban, nil
-			} else {
-				return models.StatusGood, nil
-			}
+	}
+	for _, ban := range data.Ban {
+		if ban.Enforcement == "PERMANENT" {
+			return models.StatusPermaban, nil
+		} else if ban.Enforcement == "UNDER_REVIEW" {
+			return models.StatusShadowban, nil
+		} else {
+			return models.StatusGood, nil
 		}
 	}
 	return models.StatusUnknown, nil
 }
 
-// CheckAccountAge checks the account age by sending a GET request to url2
-// and returns the number of years, months, days, and an error if one occurred.
-func CheckAccountAge(ssoCookie string) (int, int, int, error) {
+func checkAccountAge(ssoCookie string) (int, int, int, error) {
 	logger.Log.Info("Starting CheckAccountAge function")
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error creating HTTP request to check account age")
 		return 0, 0, 0, errors.New("failed to create HTTP request to check account age")
 	}
-	headers := internal.GenerateHeaders(ssoCookie)
+	headers := generateHeaders(ssoCookie)
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
