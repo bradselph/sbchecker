@@ -1,10 +1,10 @@
-package internal
+package main
 
 import (
 	"fmt"
 )
 
-func GenerateHeaders(ssoCookie string) map[string]string {
+func generateHeaders(ssoCookie string) map[string]string {
 	return map[string]string{
 		"accept":             "*/*",
 		"accept-language":    "en-US,en;q=0.9,es;q=0.8",
