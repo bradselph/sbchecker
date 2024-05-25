@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  release:
+    types: [created]
+
+jobs:
+
+  build-linux-amd64:
+    name: Build Linux/AMD64
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4.1.1
+
+    - name: Build Binaries
+      uses: lmangani/go-release-action@v1.37-ubuntu
+      with:
+        github_token: ${{ secrets.TOKEN_GITHUB }}
+        goos: linux
+        goarch: amd64
+        goversion: 1.22.0
+        project_path: .
+        binary_name: sbchecker
+        build_flags: -buildvcs=false
+
+    - name: Package Directories and Files
+      uses: actions/upload-artifact@v4.3.1
+      with:
+        name: extra-directories-files
+        path: |
+          internal
+          models
+          cmd
+          logs
+          main.go
+          .env
+          start.sh
+        if-no-files-found: error
+
+    - name: Push Release
+      uses: actions/upload-artifact@v4.3.1
+      with:
+        name: Release
+        path: .
+        exclude: |
+          .git*
+          .idea*
+          Readme.md
+          go.sum
+          go.mod

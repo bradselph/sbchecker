@@ -79,7 +79,8 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("Error deleting command %s", command.Name)
+ 		logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
+
 			return
 		}
 	}

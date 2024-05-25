@@ -29,7 +29,9 @@ func Databaselogin() error {
 
 	if dbUser == "" || dbPassword == "" || dbHost == "" || dbPort == "" || dbName == "" || dbVar == "" {
 		err = errors.New("one or more environment variables for database not set or missing")
-		logger.Log.WithError(err).WithField("Bot Startup", "database variables").Error()
+
+		logger.Log.WithError(err).WithField("Bot Startup ", "database variables ").Error()
+
 		return err
 	}
 
@@ -37,7 +39,8 @@ func Databaselogin() error {
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Log.WithError(err).WithField("Bot Startup", "Mysql Config").Error()
+		logger.Log.WithError(err).WithField("Bot Startup ", "Mysql Config ").Error()
+
 		return err
 	}
 
@@ -45,7 +48,8 @@ func Databaselogin() error {
 
 	err = DB.AutoMigrate(&models.Account{}, &models.Ban{})
 	if err != nil {
-		logger.Log.WithError(err).WithField("Bot Startup", "Database Models Problem").Error()
+logger.Log.WithError(err).WithField("Bot Startup ", "Database Models Problem ").Error()
+
 		return err
 	}
 

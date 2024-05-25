@@ -60,7 +60,9 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("Error deleting command %s", command.Name)
+
+			logger.Log.WithError(err).Errorf("Error deleting command %s" , command.Name)
+
 			return
 		}
 	}
@@ -71,7 +73,9 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Received help command")
 	embed := &discordgo.MessageEmbed{
 		Title:       "Help",
-		Description: "If you need help or have any issues, please message Susplayer32 on Discord.",
+
+		Description: "If you need help or have any issues, please message Susplayer32 on Discord. ",
+
 		Color:       0x00ff00,
 	}
 
