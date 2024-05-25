@@ -76,7 +76,9 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
+
 			logger.Log.WithError(err).Errorf("Error unregistering the command %s ", command.Name)
+
 			continue
 		}
 	}
@@ -118,7 +120,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 	defer tx.Exec("SET FOREIGN_KEY_CHECKS=1;")
 
-	if err := tx.Unscoped().Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
+
 		logger.Log.WithError(err).Error("Error deleting associated bans for account ", account.ID)
 		tx.Rollback()
 		return
@@ -126,6 +128,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 
 	if err := tx.Unscoped().Where("id = ?", account.ID).Delete(&models.Account{}).Error; err != nil {
 		logger.Log.WithError(err).Error("Error deleting account from database ", account.ID)
+
 		tx.Rollback()
 		return
 	}
@@ -221,7 +224,9 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 			logger.Log.Infof("Updating command %s", command.Name)
 			_, err := s.ApplicationCommandEdit(s.State.User.ID, guildID, command.ID, config)
 			if err != nil {
+
 				logger.Log.WithError(err).Errorf("Error updating command %s ", command.Name)
+
 				return
 			}
 		}

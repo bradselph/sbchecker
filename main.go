@@ -20,7 +20,6 @@ var commandHandlers = map[string]func(*discordgo.Session, *discordgo.Interaction
 
 func main() {
 	logger.Log.Info("Bot starting...")
-
 	err := loadEnvironmentVariables()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Environment Variables").Error()
@@ -32,7 +31,6 @@ func main() {
 		logger.Log.WithError(err).WithField("Bot Startup", "Databaselogin").Error()
 		os.Exit(1)
 	}
-
 	err = startBot()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Startup", "Discordlogin").Error()
@@ -40,10 +38,10 @@ func main() {
 	}
 
 	logger.Log.Info("Bot is running")
-
-	sc := make(chan os.Signal, 1)
+sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
+
 
 	err = stopBot()
 	if err != nil {
@@ -102,10 +100,11 @@ func startBot() error {
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		handler, ok := commandHandlers[i.ApplicationCommandData().Name]
 		if ok {
-			logger.Log.WithField("command", i.ApplicationCommandData().Name).Info("Handling command")
+      logger.Log.WithField("command", i.ApplicationCommandData().Name).Info("Handling command")
 			handler(s, i)
 		} else {
 			logger.Log.WithField("command", i.ApplicationCommandData().Name).Error("Command handler not found")
+
 		}
 	})
 
@@ -122,13 +121,24 @@ func stopBot() error {
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Shutdown", "Disconnecting Guilds").Error()
 		return err
-	}
+}
 	for _, guild := range guilds {
 		logger.Log.WithField("guild", guild.Name).Info("Disconnected from Guild")
 	}
 	err = session.Close()
 	if err != nil {
 		logger.Log.WithError(err).WithField("Bot Shutdown", "Closing Session").Error()
+		return err
+	}
+	return nil
+}
+
+func restartBot() error {
+	logger.Log.Info("Restarting bot")
+	err := stopBot()
+	if err != nil {
+		logger.Log.WithError(err).Error("Error stopping bot")
+
 		return err
 	}
 	return nil

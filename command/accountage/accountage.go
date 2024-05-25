@@ -77,7 +77,8 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
+	logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
+
 			return
 		}
 	}
@@ -118,8 +119,9 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	statusCode, err := services.VerifySSOCookie(account.SSOCookie)
 	if err != nil {
+
 		logger.Log.WithError(err).Errorf("Error verifying SSO cookie for account %s ", account.Title)
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+    s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Error verifying SSO cookie.",
@@ -131,6 +133,7 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if statusCode != 200 {
 		logger.Log.Errorf("Invalid SSO cookie for account %s ", account.Title)
+
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -143,7 +146,8 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
 	if err != nil {
-		logger.Log.WithError(err).Errorf("Error checking account age for account %s ", account.Title)
+     logger.Log.WithError(err).Errorf("Error checking account age for account %s ", account.Title)
+
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
