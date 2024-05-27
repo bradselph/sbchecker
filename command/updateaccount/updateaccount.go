@@ -9,8 +9,7 @@ import (
 	"codstatusbot/services"
 )
 
-// RegisterCommand registers the "updateaccount" command in the Discord session.
-// It creates or updates the command based on its existence.
+// RegisterCommand registers the "updateaccount" command in the Discord session. It creates or updates the command based on its existence.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	commands := []*discordgo.ApplicationCommand{
 		{
@@ -79,15 +78,14 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
- 		logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
+			logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
 
 			return
 		}
 	}
 }
 
-// CommandUpdateAccount handles the "updateaccount" command interaction.
-// It updates the SSO cookie for a specific account.
+// CommandUpdateAccount handles the "updateaccount" command interaction. It updates the SSO cookie for a specific account.
 func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Received updateaccount command")
 
@@ -95,6 +93,13 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "An error occurred while updating the account",
+					Flags:   64,
+				},
+			})
 		}
 	}()
 
@@ -106,6 +111,7 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 
 	statusCode, err := services.VerifySSOCookie(newSSOCookie)
 	if err != nil {
+		tx.Rollback()
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -117,6 +123,7 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	if statusCode != 200 {
+		tx.Rollback()
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -130,6 +137,7 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	var account models.Account
 	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountID, guildID).First(&account)
 	if result.Error != nil {
+		tx.Rollback()
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -141,9 +149,9 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	account.SSOCookie = newSSOCookie
-	account.LastStatus = models.StatusUnknown // Reset the status to prevent further notifications
-	account.IsExpiredCookie = false           // Reset the expired cookie flag to prevent further notifications
-	account.LastCookieNotification = 0        // Reset the last cookie notification timestamp to prevent further notifications
+	account.LastStatus = models.StatusUnknown
+	account.IsExpiredCookie = false
+	account.LastCookieNotification = 0
 	tx.Save(&account)
 	tx.Commit()
 
