@@ -16,7 +16,7 @@ import (
 )
 
 var session *discordgo.Session
-var commandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
 func main() {
 	logger.Log.Info("Bot starting...")
@@ -97,7 +97,7 @@ func startBot() error {
 	}
 
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		handler, ok := commandHandlers[i.ApplicationCommandData().Name]
+		handler, ok := command.CommandHandlers[i.ApplicationCommandData().Name]
 		if ok {
 			logger.Log.WithField("command", i.ApplicationCommandData().Name).Info("Handling command")
 			handler(s, i)
