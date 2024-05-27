@@ -120,7 +120,8 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 	defer tx.Exec("SET FOREIGN_KEY_CHECKS=1;")
 
-
+	// Missing code for deleting associated bans before deleting the account
+	if err := tx.Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
 		logger.Log.WithError(err).Error("Error deleting associated bans for account ", account.ID)
 		tx.Rollback()
 		return

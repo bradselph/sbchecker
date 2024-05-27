@@ -12,29 +12,29 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var commandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
 // RegisterCommand registers all command handlers for a specific guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Registering commands by command handler")
 	addaccount.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering addaccount command")
-	commandHandlers["addaccount"] = addaccount.CommandAddAccount
+	CommandHandlers["addaccount"] = addaccount.CommandAddAccount
 	removeaccount.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering removeaccount command")
-	commandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
+	CommandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
 	accountlogs.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering accountlogs command")
-	commandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
+	CommandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
 	updateaccount.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering updateaccount command")
-	commandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
+	CommandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
 	accountage.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering accountage command")
-	commandHandlers["accountage"] = accountage.CommandAccountAge
+	CommandHandlers["accountage"] = accountage.CommandAccountAge
 	help.RegisterCommand(s, guildID)
 	logger.Log.Info("Registering help command")
-	commandHandlers["help"] = help.CommandHelp
+	CommandHandlers["help"] = help.CommandHelp
 }
 
 // UnregisterCommand unregisters all command handlers for a specific guild.
