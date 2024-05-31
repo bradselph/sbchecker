@@ -12,10 +12,9 @@ import (
 // choices holds the choices for the "removeaccount" command.
 var choices []*discordgo.ApplicationCommandOptionChoice
 
-// RegisterCommand registers the "removeaccount" command in the Discord session for a specific guild.
-func RegisterCommand(s *discordgo.Session, guildID string, commands map[string*discordgo.ApplicationCommand]) {
-	choices = services.GetAllChoices(guildID)
-	command := []*discordgo.ApplicationCommand{
+func RegisterCommand(s *discordgo.Session, guildID string) {
+	choices = getAllChoices(guildID)
+	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "removeaccount",
 			Description: "Remove an account from shadowban checking",
@@ -118,11 +117,11 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		tx.Rollback()
 		return
 	}
-	defer tx.Exec("SET FOREIGN_KEY_CHECKS=1;")
+	defer tx.Exec("SET FOREIGN_KEY_CHECKS=1;") // Re-enable foreign key constraints
 
-	// Missing code for deleting associated bans before deleting the account
-	if err := tx.Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
-		logger.Log.WithError(err).Error("Error deleting associated bans for account ", account.ID)
+	// Delete associated bans
+	if err := tx.Unscoped().Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
+		logger.Log.WithError(err).Error("Error deleting associated bans for account", account.ID)
 		tx.Rollback()
 		return
 	}
