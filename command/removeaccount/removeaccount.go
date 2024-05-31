@@ -13,9 +13,9 @@ import (
 var choices []*discordgo.ApplicationCommandOptionChoice
 
 // RegisterCommand registers the "removeaccount" command in the Discord session for a specific guild.
-func RegisterCommand(s *discordgo.Session, guildID string) {
+func RegisterCommand(s *discordgo.Session, guildID string, commands map[string*discordgo.ApplicationCommand]) {
 	choices = services.GetAllChoices(guildID)
-	commands := []*discordgo.ApplicationCommand{
+	command := []*discordgo.ApplicationCommand{
 		{
 			Name:        "removeaccount",
 			Description: "Remove an account from shadowban checking",
@@ -64,7 +64,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-// UnregisterCommand removes all application commands from the Discord session for a specific guild.
+// UnregisterCommand removes the "removeaccount" command from the Discord session for a specific guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {

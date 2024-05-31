@@ -11,28 +11,27 @@ import (
 )
 
 // RegisterCommand registers the "addaccount" command in the Discord session for a specific guild.
-func RegisterCommand(s *discordgo.Session, guildID string) {
-	commands := []*discordgo.ApplicationCommand{
-		{
-			Name:        "addaccount",
-			Description: "Add or remove an account for shadowban checking",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "title",
-					Description: "The title of the account",
-					Required:    true,
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "sso_cookie",
-					Description: "The SSO cookie for the account",
-					Required:    true,
-				},
+func RegisterCommand(s *discordgo.Session, guildID string, commands map[string]*discordgo.ApplicationCommand) {
+	command := &discordgo.ApplicationCommand{
+		Name:        "addaccount",
+		Description: "Add or remove an account for shadowban checking",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "title",
+				Description: "The title of the account",
+				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "sso_cookie",
+				Description: "The SSO cookie for the account",
+				Required:    true,
 			},
 		},
 	}
 
+	commands["addaccount"] = command
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
@@ -66,7 +65,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-// UnregisterCommand removes all application commands from the Discord session for a specific guild.
+// UnregisterCommand removes the "addaccount" command from the Discord session for a specific guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
