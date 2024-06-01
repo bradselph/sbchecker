@@ -1,15 +1,16 @@
 package bot
 
 import (
-	"codstatusbot2.0/logger"
 	"errors"
-	"github.com/bwmarrin/discordgo"
 	"os"
+
+	"codstatusbot2.0/command"
+	"codstatusbot2.0/logger"
+	"github.com/bwmarrin/discordgo"
 )
 
 var discord *discordgo.Session
-
-// var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
 func StartBot() error {
 	envToken := os.Getenv("DISCORD_TOKEN")
@@ -37,17 +38,16 @@ func StartBot() error {
 		return err
 	}
 
-	/*
-		guilds, err := discord.UserGuilds(100, "", "", false)
-		if err != nil {
-			logger.Log.WithError(err).WithField("Bot startup", "Initiating Guilds").Error()
-			return err
-		}
-		for _, guild := range guilds {
-			logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
-			command.RegisterCommand(discord, guild.ID)
-		}
-	*/
+	guilds, err := discord.UserGuilds(100, "", "", false)
+	if err != nil {
+		logger.Log.WithError(err).WithField("Bot startup", "Initiating Guilds").Error()
+		return err
+	}
+	for _, guild := range guilds {
+		logger.Log.WithField("guild", guild.Name).Info("Connected to guild")
+		command.RegisterCommands(discord, guild.ID)
+	}
+
 	/*
 		discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			handler, ok := command.CommandHandlers[i.ApplicationCommandData().Name]

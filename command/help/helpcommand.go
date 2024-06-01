@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func registerCommand(s *discordgo.Session, guildID string) {
+func RegisterCommand(s *discordgo.Session, guildID string) {
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "help",
@@ -47,8 +47,6 @@ func registerCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-/*
-// UnregisterCommand deletes all application commands for a given guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
@@ -67,9 +65,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		}
 	}
 }
-*/
-/*
-// CommandHelp handles the "help" command.
+
 func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Received help command")
 	embed := &discordgo.MessageEmbed{
@@ -88,4 +84,3 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 }
-*/
