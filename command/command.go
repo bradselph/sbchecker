@@ -12,34 +12,35 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
-var Commands = make(map[string]*discordgo.ApplicationCommand)
+var Handlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+
+// var Commands = make(map[string]*discordgo.ApplicationCommand)
 
 func RegisterCommands(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Registering commands by command handler")
 
 	removeaccount.RegisterCommand(s, guildID)
-	CommandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
+	Handlers["removeaccount"] = removeaccount.CommandRemoveAccount
 	logger.Log.Info("Registering removeaccount command")
 
 	accountlogs.RegisterCommand(s, guildID)
-	CommandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
+	Handlers["accountlogs"] = accountlogs.CommandAccountLogs
 	logger.Log.Info("Registering accountlogs command")
 
 	updateaccount.RegisterCommand(s, guildID)
-	CommandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
+	Handlers["updateaccount"] = updateaccount.CommandUpdateAccount
 	logger.Log.Info("Registering updateaccount command")
 
 	accountage.RegisterCommand(s, guildID)
-	CommandHandlers["accountage"] = accountage.CommandAccountAge
+	Handlers["accountage"] = accountage.CommandAccountAge
 	logger.Log.Info("Registering accountage command")
 
 	addaccount.RegisterCommand(s, guildID)
-	CommandHandlers["addaccount"] = addaccount.CommandAddAccount
+	Handlers["addaccount"] = addaccount.CommandAddAccount
 	logger.Log.Info("Registering addaccount command")
 
 	help.RegisterCommand(s, guildID)
-	CommandHandlers["help"] = help.CommandHelp
+	Handlers["help"] = help.CommandHelp
 	logger.Log.Info("Registering help command")
 }
 

@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"codstatusbot2.0/services"
 	"errors"
 	"os"
 
@@ -10,7 +11,6 @@ import (
 )
 
 var discord *discordgo.Session
-var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
 func StartBot() error {
 	envToken := os.Getenv("DISCORD_TOKEN")
@@ -48,25 +48,35 @@ func StartBot() error {
 		command.RegisterCommands(discord, guild.ID)
 	}
 
-	/*
-		discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			handler, ok := command.CommandHandlers[i.ApplicationCommandData().Name]
-			if ok {
-				logger.Log.WithField("command", i.ApplicationCommandData().Name).Info("Handling command")
-				handler(s, i)
-			} else {
-				logger.Log.WithField("command", i.ApplicationCommandData().Name).Error("Command handler not found")
-			}
-		})
-		discord.AddHandler(OnGuildCreate)
-		discord.AddHandler(OnGuildDelete)
-		go services.CheckAccounts(discord)
-	*/
+	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		handler, ok := command.Handlers[i.ApplicationCommandData().Name]
+		if ok {
+			logger.Log.WithField("command", i.ApplicationCommandData().Name).Info("Handling command")
+			handler(s, i)
+		} else {
+			logger.Log.WithField("command", i.ApplicationCommandData().Name).Error("Command handler not found")
+		}
+	})
+	discord.AddHandler(OnGuildCreate)
+	discord.AddHandler(OnGuildDelete)
+	go services.CheckAccounts(discord)
 	return nil
 }
 
-/*
-func StopBot() error {
+func OnGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
+	guildID := event.Guild.ID
+	logger.Log.WithField("guild", guildID).Info("Bot joined server:")
+	command.RegisterCommands(s, guildID)
+}
+
+func OnGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
+	guildID := event.Guild.ID
+	logger.Log.WithField("guild", guildID).Info("Bot left guild")
+	command.UnregisterCommands(s, guildID)
+}
+
+// Possibly unnecessary; not sure yet. Commenting it out for now.
+/*	func StopBot() error {
 	logger.Log.Info("Bot is shutting down")
 	guilds, err := discord.UserGuilds(100, "", "", false)
 	if err != nil {
@@ -83,8 +93,7 @@ func StopBot() error {
 	}
 	return nil
 }
-*/
-/*
+
 func RestartBot() error {
 	logger.Log.Info("Restarting bot")
 	err := StopBot()
@@ -100,18 +109,5 @@ func RestartBot() error {
 	}
 	logger.Log.Info("Bot restarted successfully")
 	return nil
-}
-*/
-/*
-func OnGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
-	guildID := event.Guild.ID
-	logger.Log.WithField("guild", guildID).Info("Bot joined server:")
-	command.RegisterCommand(s, guildID)
-}
-
-func OnGuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
-	guildID := event.Guild.ID
-	logger.Log.WithField("guild", guildID).Info("Bot left guild")
-	command.UnregisterCommand(s, guildID)
 }
 */
