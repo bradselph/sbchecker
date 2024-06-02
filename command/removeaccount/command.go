@@ -1,11 +1,11 @@
 package removeaccount
 
 import (
-	"github.com/bwmarrin/discordgo"
-	//	"sbchecker/internal"
 	"codstatusbot2.0/database"
 	"codstatusbot2.0/logger"
 	"codstatusbot2.0/models"
+	"codstatusbot2.0/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 var choices []*discordgo.ApplicationCommandOptionChoice
@@ -141,7 +141,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	return internal.GetAllChoices(guildID)
+	return services.GetAllChoices(guildID)
 }
 
 func UpdateAccountChoices(s *discordgo.Session, guildID string) {

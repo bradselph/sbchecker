@@ -18,27 +18,27 @@ var Commands = make(map[string]*discordgo.ApplicationCommand)
 func RegisterCommands(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Registering commands by command handler")
 
-	removeaccount.RegisterCommand(s, guildID, Commands)
+	removeaccount.RegisterCommand(s, guildID)
 	CommandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
 	logger.Log.Info("Registering removeaccount command")
 
-	accountlogs.RegisterCommand(s, guildID, Commands)
+	accountlogs.RegisterCommand(s, guildID)
 	CommandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
 	logger.Log.Info("Registering accountlogs command")
 
-	updateaccount.RegisterCommand(s, guildID, Commands)
+	updateaccount.RegisterCommand(s, guildID)
 	CommandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
 	logger.Log.Info("Registering updateaccount command")
 
-	accountage.RegisterCommand(s, guildID, Commands)
+	accountage.RegisterCommand(s, guildID)
 	CommandHandlers["accountage"] = accountage.CommandAccountAge
 	logger.Log.Info("Registering accountage command")
 
-	addaccount.RegisterCommand(s, guildID, Commands)
+	addaccount.RegisterCommand(s, guildID)
 	CommandHandlers["addaccount"] = addaccount.CommandAddAccount
 	logger.Log.Info("Registering addaccount command")
 
-	help.RegisterCommand(s, guildID, Commands)
+	help.RegisterCommand(s, guildID)
 	CommandHandlers["help"] = help.CommandHelp
 	logger.Log.Info("Registering help command")
 }

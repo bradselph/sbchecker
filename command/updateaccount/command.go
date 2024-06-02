@@ -1,12 +1,11 @@
 package updateaccount
 
 import (
-	"github.com/bwmarrin/discordgo"
-	//	"sbchecker/internal"
-	//	"sbchecker/internal/services"
 	"codstatusbot2.0/database"
 	"codstatusbot2.0/logger"
 	"codstatusbot2.0/models"
+	"codstatusbot2.0/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func RegisterCommand(s *discordgo.Session, guildID string) {
@@ -20,7 +19,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     internal.GetAllChoices(guildID), // Use the GetAllChoices function
+					Choices:     services.GetAllChoices(guildID), // Use the GetAllChoices function
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,

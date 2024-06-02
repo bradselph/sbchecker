@@ -7,14 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"codstatusbot/logger"
-	"codstatusbot/models"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 )
 
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
-// VerifySSOCookie verifies the SSO cookie by sending a GET request to the Activision API.
 func VerifySSOCookie(ssoCookie string) (int, error) {
 	logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
 	req, err := http.NewRequest("GET", url1, nil)
@@ -43,7 +42,6 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	return resp.StatusCode, nil
 }
 
-// CheckAccount checks the account status by sending a GET request to the Activision API.
 func CheckAccount(ssoCookie string) (models.Status, error) {
 	logger.Log.Info("Starting CheckAccount function")
 	req, err := http.NewRequest("GET", url1, nil)
@@ -101,7 +99,6 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	return models.StatusUnknown, nil
 }
 
-// CheckAccountAge checks the account age by sending a GET request to the Activision API and parsing the created date.
 func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	logger.Log.Info("Starting CheckAccountAge function")
 	req, err := http.NewRequest("GET", url2, nil)
