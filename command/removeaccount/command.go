@@ -2,10 +2,10 @@ package removeaccount
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
+	//	"sbchecker/internal"
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 )
 
 var choices []*discordgo.ApplicationCommandOptionChoice

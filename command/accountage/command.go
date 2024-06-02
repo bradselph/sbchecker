@@ -3,11 +3,11 @@ package accountage
 import (
 	"fmt"
 
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
+	// "sbchecker/internal/services"
 )
 
 var choices []*discordgo.ApplicationCommandOptionChoice

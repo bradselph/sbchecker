@@ -1,12 +1,12 @@
 package addaccount
 
 import (
+	"codstatusbot2.0/command/removeaccount"
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/cmd/dcbot/commands/removeaccount"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
+	//	"sbchecker/internal/services"
 )
 
 func RegisterCommand(s *discordgo.Session, guildID string) {

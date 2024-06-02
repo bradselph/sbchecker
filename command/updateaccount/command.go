@@ -2,11 +2,11 @@ package updateaccount
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/internal/services"
-	"sbchecker/models"
+	//	"sbchecker/internal"
+	//	"sbchecker/internal/services"
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 )
 
 func RegisterCommand(s *discordgo.Session, guildID string) {

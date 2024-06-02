@@ -3,10 +3,10 @@ package accountlogs
 import (
 	"fmt"
 
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
 	"github.com/bwmarrin/discordgo"
-	"sbchecker/internal/database"
-	"sbchecker/internal/logger"
-	"sbchecker/models"
 )
 
 var choices []*discordgo.ApplicationCommandOptionChoice
