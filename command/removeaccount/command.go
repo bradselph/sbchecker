@@ -87,8 +87,25 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
+		} else {
+			// Re-enable foreign key constraints
+			err := tx.Exec("SET FOREIGN_KEY_CHECKS=1;").Error
+			if err != nil {
+				logger.Log.WithError(err).Error("Error re-enabling foreign key constraints")
+				tx.Rollback()
+				return
+			}
+			tx.Commit()
 		}
 	}()
+
+	// Disable foreign key constraints
+	err := tx.Exec("SET FOREIGN_KEY_CHECKS=0;").Error
+	if err != nil {
+		logger.Log.WithError(err).Error("Error disabling foreign key constraints")
+		tx.Rollback()
+		return
+	}
 
 	var account models.Account
 	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
@@ -103,15 +120,6 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		tx.Rollback()
 		return
 	}
-
-	// Disable foreign key constraints
-	err := tx.Exec("SET FOREIGN_KEY_CHECKS=0;").Error
-	if err != nil {
-		logger.Log.WithError(err).Error("Error disabling foreign key constraints")
-		tx.Rollback()
-		return
-	}
-	defer tx.Exec("SET FOREIGN_KEY_CHECKS=1;") // Re-enable foreign key constraints
 
 	// Delete associated bans
 	if err := tx.Unscoped().Where("account_id = ?", account.ID).Delete(&models.Ban{}).Error; err != nil {
@@ -136,8 +144,6 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	})
 
 	UpdateAccountChoices(s, guildID)
-
-	tx.Commit()
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
@@ -151,6 +157,8 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 		logger.Log.WithError(err).Error("Error getting application command choices")
 		return
 	}
+
+	logger.Log.Info("Updating account choices for commands")
 
 	commandConfigs := map[string]*discordgo.ApplicationCommand{
 		"removeaccount": {
@@ -221,6 +229,11 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 				logger.Log.WithError(err).Errorf("Error updating command %s", command.Name)
 				return
 			}
+			logger.Log.Infof("Command %s updated successfully", command.Name)
+		} else {
+			logger.Log.Warnf("No config found for command %s", command.Name)
 		}
 	}
+
+	logger.Log.Info("Account choices updated successfully")
 }

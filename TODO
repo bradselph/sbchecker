@@ -1,42 +1,22 @@
-TODO investigate the removeaccount function and this error
-        >= 200ms
-        [704.025ms] [rows:1] SELECT * FROM `accounts` WHERE guild_id = '1237124752385249280' AND `accounts`.`deleted_at` IS NULL
-        INFO[0445] Updating command removeaccount
-        INFO[0445] Updating command accountlogs
-        INFO[0445] Updating command updateaccount
-        INFO[0445] Updating command accountage
-        2024/06/02 07:20:26 C:/Users/selph/OneDrive/Desktop/CODStatusBot/command/removeaccount/command.go:141 sql: transaction has already been committed or rolled back
-        [0.000ms] [rows:0] SET FOREIGN_KEY_CHECKS=1;
-        INFO[0450] Starting periodic account check
+TODO after removing a account the account list needs to be updated somehow as the title of the remove account still shows as option for all commands
 
-TODO after removing a account the account list needs to be updated somehow
 
-TODO fix update account function its not reverifying the new ssocookie or 
-responding to discord correctly
+TODO fix update account function its not reverifying the new ssocookie or responding to discord correctly
+    INFO[1292] Starting periodic account check
+    INFO[1292] Skipping account with expired cookie          account=alt
+    INFO[1292] Owner of altrecently notified within 1Hours already, skipping  account=alt
+    INFO[1312] Handling command                              command=updateaccount
+    INFO[1312] Verifying SSO cookie: NDkwNjAyNDI0MzIzMzU3NTY1ODoxNzE4NTM2NTk4NTYzOjIzMDRiNGMyZGJlZmNjNDU5ZGYxM2QxOWNjOTFhMTVm
+    INFO[1312] Creating headers
+    2024/06/02 07:35:00 C:/Users/selph/OneDrive/Desktop/CODStatusBot/command/updateaccount/command.go:121 SLOW SQL >= 200ms
+    [262.616ms] [rows:1] SELECT * FROM `accounts` WHERE (user_id = '1019038300134191114' AND id = 5 AND guild_id = '1237124752385249280') AND `accounts`.`deleted_at` IS NULL ORDER BY `accounts`.`id` LIMIT 1
+    2024/06/02 07:35:00 C:/Users/selph/OneDrive/Desktop/CODStatusBot/command/updateaccount/command.go:134 SLOW SQL >= 200ms
+    [271.246ms] [rows:1] UPDATE `accounts` SET `created_at`='2024-06-02 11:26:34.81',`updated_at`='2024-06-02 11:35:00.352',`deleted_at`=NULL,`guild_id`='1237124752385249280',`user_id`='1019038300134191114',`channel_id`='1237124752985030729',`title`='alt',`last_status`='good',`last_check`=1717327652,`last_notification`=1717327652,`last_cookie_notification`=1717328014,`sso_cookie`='NDkwNjAyNDI0MzIzMzU3NTY1ODoxNzE4NTM2NTk4NTYzOjIzMDRiNGMyZGJlZmNjNDU5ZGYxM2QxOWNjOTFhMTVm',`created`='',`is_expired_cookie`=true WHERE `accounts`.`deleted_at` IS NULL AND `id` = 5
+    INFO[1352] Starting periodic account check
+    INFO[1352] Skipping account with expired cookie          account=alt
 
-INFO[1292] Starting periodic account check
-INFO[1292] Skipping account with expired cookie          account=alt
-INFO[1292] Owner of altrecently notified within 1Hours already, skipping  account=alt
-INFO[1312] Handling command                              command=updateaccount
-INFO[1312] Verifying SSO cookie: NDkwNjAyNDI0MzIzMzU3NTY1ODoxNzE4NTM2NTk4NTYzOjIzMDRiNGMyZGJlZmNjNDU5ZGYxM2QxOWNjOTFhMTVm
-INFO[1312] Creating headers
 
-2024/06/02 07:35:00 C:/Users/selph/OneDrive/Desktop/CODStatusBot/command/updateaccount/command.go:121 SLOW SQL >= 200ms
-[262.616ms] [rows:1] SELECT * FROM `accounts` WHERE (user_id = '1019038300134191114' AND id = 5 AND guild_id = '1237124752385249280') AND `accounts`.`deleted_at` IS NULL ORDER BY `accounts`.`id` LIMIT 1
 
-2024/06/02 07:35:00 C:/Users/selph/OneDrive/Desktop/CODStatusBot/command/updateaccount/command.go:134 SLOW SQL >= 200ms
-[271.246ms] [rows:1] UPDATE `accounts` SET `created_at`='2024-06-02 11:26:34.81',`updated_at`='2024-06-02 11:35:00.352',`deleted_at`=NULL,`guild_id`='1237124752385249280',`user_id`='1019038300134191114',`channel_id`='1237124752985030729',`title`='alt',`last_status`='good',`last_check`=1717327652,`last_notification`=1717327652,`last_cookie_notification`=1717328014,`sso_cookie`='NDkwNjAyNDI0MzIzMzU3NTY1ODoxNzE4NTM2NTk4NTYzOjIzMDRiNGMyZGJlZmNjNDU5ZGYxM2QxOWNjOTFhMTVm',`created`='',`is_expired_cookie`=true WHERE `accounts`.`deleted_at` IS NULL AND `id` = 5
-INFO[1352] Starting periodic account check
-INFO[1352] Skipping account with expired cookie          account=alt
-INFO[1352] Owner of altrecently notified within 1Hours already, skipping  account=alt
-INFO[1412] Starting periodic account check
-INFO[1412] Skipping account with expired cookie          account=alt
-INFO[1412] Owner of altrecently notified within 1Hours already, skipping  account=alt
-INFO[1472] Starting periodic account check
-INFO[1472] Skipping account with expired cookie          account=alt
-INFO[1472] Owner of altrecently notified within 1Hours already, skipping  account=alt
-INFO[1532] Starting periodic account check
-INFO[1532] Skipping account with expired cookie          account=alt
-INFO[1532] Owner of altrecently notified within 1Hours already, skipping  account=alt
-INFO[1592] Starting periodic account check
-INFO[1592] Skipping account with expired cookie          account=alt
+TODO work on the verbose output of accountage function it currently stops at creating headers and then no other info is given but the function completes and responds normally
+    forcing a invalid ssocookie then running the function produces no response from bot to discord but does fail with a error in log wich is fine
+    maybe when everything is good it just doesnt confirm in log after creating headers.
