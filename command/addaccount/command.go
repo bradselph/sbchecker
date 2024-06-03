@@ -163,7 +163,7 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		})
 
 		removeaccount.UpdateAccountChoices(s, guildID)
-
-		go services.CheckSingleAccount(account, s)
+		// unnecessary to check account status immediately after adding it causes a double response when first adding an account
+		// services.CheckSingleAccount(account, s)
 	}()
 }

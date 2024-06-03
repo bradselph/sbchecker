@@ -1,11 +1,11 @@
 package bot
 
 import (
+	"codstatusbot2.0/command"
 	"codstatusbot2.0/services"
 	"errors"
 	"os"
 
-	"codstatusbot2.0/command"
 	"codstatusbot2.0/logger"
 	"github.com/bwmarrin/discordgo"
 )

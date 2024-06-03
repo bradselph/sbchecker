@@ -1,3 +1,4 @@
+TODO still working on remove account options
 TODO after removing a account the account list needs to be updated somehow as the title of the remove account still shows as option for all commands
 
 
@@ -20,3 +21,6 @@ TODO fix update account function its not reverifying the new ssocookie or respon
 TODO work on the verbose output of accountage function it currently stops at creating headers and then no other info is given but the function completes and responds normally
     forcing a invalid ssocookie then running the function produces no response from bot to discord but does fail with a error in log wich is fine
     maybe when everything is good it just doesnt confirm in log after creating headers.
+
+
+TODO add a ssocookie verification for the accountage function so it can also update the database if a ssocookie has expired or became invalid

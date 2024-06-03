@@ -4,14 +4,10 @@ import (
 	"codstatusbot2.0/database"
 	"codstatusbot2.0/logger"
 	"codstatusbot2.0/models"
-	"codstatusbot2.0/services"
 	"github.com/bwmarrin/discordgo"
 )
 
-var choices []*discordgo.ApplicationCommandOptionChoice
-
 func RegisterCommand(s *discordgo.Session, guildID string) {
-	choices = getAllChoices(guildID)
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "removeaccount",
@@ -22,7 +18,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 			},
 		},
@@ -146,12 +142,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	UpdateAccountChoices(s, guildID)
 }
 
-func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
-	return services.GetAllChoices(guildID)
-}
-
 func UpdateAccountChoices(s *discordgo.Session, guildID string) {
-	choices = getAllChoices(guildID)
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application command choices")
@@ -170,7 +161,7 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 			},
 		},
@@ -183,7 +174,7 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 			},
 		},
@@ -196,7 +187,7 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
@@ -215,7 +206,7 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 			},
 		},
@@ -236,4 +227,18 @@ func UpdateAccountChoices(s *discordgo.Session, guildID string) {
 	}
 
 	logger.Log.Info("Account choices updated successfully")
+}
+
+func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	logger.Log.Info("Getting all choices for account select dropdown")
+	var accounts []models.Account
+	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
+	for i, account := range accounts {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  account.Title,
+			Value: account.ID,
+		}
+	}
+	return choices
 }

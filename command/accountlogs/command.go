@@ -9,11 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var choices []*discordgo.ApplicationCommandOptionChoice
-
 func RegisterCommand(s *discordgo.Session, guildID string) {
-	choices = getAllChoices(guildID)
-
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "accountlogs",
@@ -24,7 +20,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     choices,
+					Choices:     getAllChoices(guildID),
 				},
 			},
 		},
@@ -122,9 +118,9 @@ func CommandAccountLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	logger.Log.Info("Getting all choices for account select dropdown")
 	var accounts []models.Account
 	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
-
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
 	for i, account := range accounts {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
@@ -132,6 +128,5 @@ func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
 			Value: account.ID,
 		}
 	}
-
 	return choices
 }

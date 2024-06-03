@@ -19,7 +19,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 					Name:        "account",
 					Description: "The title of the account",
 					Required:    true,
-					Choices:     services.GetAllChoices(guildID), // Use the GetAllChoices function
+					Choices:     getAllChoices(guildID), // Use the GetAllChoices function
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
@@ -140,4 +140,18 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 			Flags:   64, // Set ephemeral flag
 		},
 	})
+}
+
+func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {
+	logger.Log.Info("Getting all choices for account select dropdown")
+	var accounts []models.Account
+	database.DB.Where("guild_id = ?", guildID).Find(&accounts)
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(accounts))
+	for i, account := range accounts {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  account.Title,
+			Value: account.ID,
+		}
+	}
+	return choices
 }
