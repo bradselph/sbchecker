@@ -1,5 +1,8 @@
-TODO still working on remove account options
 TODO after removing a account the account list needs to be updated somehow as the title of the remove account still shows as option for all commands
+
+
+TODO still working on remove account options
+    add in a delay after removing account to possibly allow discord to clear and update the cache
 
 
 TODO fix update account function its not reverifying the new ssocookie or responding to discord correctly
@@ -24,3 +27,10 @@ TODO work on the verbose output of accountage function it currently stops at cre
 
 
 TODO add a ssocookie verification for the accountage function so it can also update the database if a ssocookie has expired or became invalid
+
+TODO create matainence functions for purging old and expired sso cookies from the database
+
+TODO implement some type of encryption for possibly sensitive data in the database
+
+TODO create end user documentation for the bot
+TODO create privacy policy for the bot

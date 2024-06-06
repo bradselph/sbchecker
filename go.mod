@@ -1,6 +1,6 @@
 module codstatusbot2.0
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/bwmarrin/discordgo v0.28.1

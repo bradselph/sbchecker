@@ -14,8 +14,6 @@ import (
 
 var Handlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
 
-// var Commands = make(map[string]*discordgo.ApplicationCommand)
-
 func RegisterCommands(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Registering commands by command handler")
 
