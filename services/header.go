@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// GenerateHeaders generates the headers for the request to the Activision API.
 func GenerateHeaders(ssoCookie string) map[string]string {
 	return map[string]string{
 		"accept":           "*/*",

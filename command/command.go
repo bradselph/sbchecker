@@ -1,47 +1,57 @@
 package command
 
 import (
-	"codstatusbot2.0/command/accountage"
-	"codstatusbot2.0/command/accountlogs"
-	"codstatusbot2.0/command/addaccount"
-	"codstatusbot2.0/command/help"
-	"codstatusbot2.0/command/removeaccount"
-	"codstatusbot2.0/command/updateaccount"
-	"codstatusbot2.0/logger"
+	"codstatusbot/command/accountage"
+	"codstatusbot/command/accountlogs"
+	"codstatusbot/command/addaccount"
+	"codstatusbot/command/help"
+	"codstatusbot/command/removeaccount"
+	"codstatusbot/command/updateaccount"
+	"codstatusbot/logger"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var Handlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+var (
+	CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){}
+	Commands        = make(map[string]*discordgo.ApplicationCommand)
+)
 
+// RegisterCommands registers all command handlers and commands for a specific guild.
 func RegisterCommands(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Registering commands by command handler")
 
-	removeaccount.RegisterCommand(s, guildID)
-	Handlers["removeaccount"] = removeaccount.CommandRemoveAccount
-	logger.Log.Info("Registering removeaccount command")
-
-	accountlogs.RegisterCommand(s, guildID)
-	Handlers["accountlogs"] = accountlogs.CommandAccountLogs
-	logger.Log.Info("Registering accountlogs command")
-
-	updateaccount.RegisterCommand(s, guildID)
-	Handlers["updateaccount"] = updateaccount.CommandUpdateAccount
-	logger.Log.Info("Registering updateaccount command")
-
-	accountage.RegisterCommand(s, guildID)
-	Handlers["accountage"] = accountage.CommandAccountAge
-	logger.Log.Info("Registering accountage command")
-
-	addaccount.RegisterCommand(s, guildID)
-	Handlers["addaccount"] = addaccount.CommandAddAccount
+	addaccount.RegisterCommand(s, guildID, Commands)
 	logger.Log.Info("Registering addaccount command")
+	CommandHandlers["addaccount"] = addaccount.CommandAddAccount
 
-	help.RegisterCommand(s, guildID)
-	Handlers["help"] = help.CommandHelp
+	removeaccount.RegisterCommand(s, guildID, Commands)
+	logger.Log.Info("Registering removeaccount command")
+	CommandHandlers["removeaccount"] = removeaccount.CommandRemoveAccount
+
+	accountlogs.RegisterCommand(s, guildID, Commands)
+	logger.Log.Info("Registering accountlogs command")
+	CommandHandlers["accountlogs"] = accountlogs.CommandAccountLogs
+
+	updateaccount.RegisterCommand(s, guildID, Commands)
+	logger.Log.Info("Registering updateaccount command")
+	CommandHandlers["updateaccount"] = updateaccount.CommandUpdateAccount
+
+	accountage.RegisterCommand(s, guildID, Commands)
+	logger.Log.Info("Registering accountage command")
+	CommandHandlers["accountage"] = accountage.CommandAccountAge
+
+	help.RegisterCommand(s, guildID, Commands)
 	logger.Log.Info("Registering help command")
+	CommandHandlers["help"] = help.CommandHelp
+
+	err := s.BulkOverwriteGuildCommands(guildID, Commands.Values())
+	if err != nil {
+		logger.Log.WithError(err).Error("Error registering commands")
+	}
 }
 
+// UnregisterCommands unregisters all command handlers and commands for a specific guild.
 func UnregisterCommands(s *discordgo.Session, guildID string) {
 	logger.Log.Info("Unregistering commands by command handler")
 
@@ -62,4 +72,9 @@ func UnregisterCommands(s *discordgo.Session, guildID string) {
 
 	help.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering help command")
+
+	err := s.BulkOverwriteGuildCommands(guildID, []*discordgo.ApplicationCommand{})
+	if err != nil {
+		logger.Log.WithError(err).Error("Error unregistering commands")
+	}
 }

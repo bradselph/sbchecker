@@ -1,11 +1,12 @@
 package help
 
 import (
-	"codstatusbot2.0/logger"
+	"codstatusbot/logger"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+// RegisterCommand registers the "help" command for a given guild.
 func RegisterCommand(s *discordgo.Session, guildID string) {
 	commands := []*discordgo.ApplicationCommand{
 		{
@@ -47,6 +48,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
+// UnregisterCommand deletes all application commands for a given guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
@@ -59,21 +61,22 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
 
-			logger.Log.WithError(err).Errorf("Error deleting command %s", command.Name)
+			logger.Log.WithError(err).Errorf("Error deleting command %s" , command.Name)
 
 			return
 		}
 	}
 }
 
+// CommandHelp handles the "help" command.
 func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Received help command")
 	embed := &discordgo.MessageEmbed{
-		Title: "Help",
+		Title:       "Help",
 
 		Description: "If you need help or have any issues, please message Susplayer32 on Discord. ",
 
-		Color: 0x00ff00,
+		Color:       0x00ff00,
 	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

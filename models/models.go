@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Account represents a user's account within a guild.
 type Account struct {
 	gorm.Model
 	GuildID                string `gorm:"index"` // The ID of the guild the account belongs to.
@@ -15,10 +16,11 @@ type Account struct {
 	LastNotification       int64  // The timestamp of the last daily notification sent out on the account.
 	LastCookieNotification int64  // The timestamp of the last notification sent out on the account for an expired ssocookie.
 	SSOCookie              string // The SSO cookie associated with the account.
-	Created                string // The timestamp of when the account was created on Activision.
+	Created                string // The timestamp of when the account was created on activision.
 	IsExpiredCookie        bool   `gorm:"default:false"` // A flag indicating if the SSO cookie has expired.
 }
 
+// Status represents the status of an account.
 type Status string
 
 const (
@@ -29,6 +31,7 @@ const (
 	StatusInvalidCookie Status = "invalid_cookie" // The account has an invalid SSO cookie.
 )
 
+// Ban represents a ban on an account.
 type Ban struct {
 	gorm.Model
 	Account   Account // The account that has been banned.
