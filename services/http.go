@@ -33,6 +33,7 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		logger.Log.WithError(err).Error("Error reading response body from verify SSO cookie request")
 		return 0, errors.New("failed to read response body from verify SSO cookie request")
 	}
 
@@ -49,7 +50,6 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 		return models.StatusUnknown, errors.New("failed to create HTTP request to check account")
 	}
 	headers := GenerateHeaders(ssoCookie)
-	logger.Log.Info("Creating headers")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -64,36 +64,44 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to read response body from check account request")
 	}
+	logger.Log.Info("Response Body: ", string(body))
+
+	var data struct {
+		Ban []struct {
+			Enforcement string `json:"enforcement"`
+			Title       string `json:"title"`
+		} `json:"bans"`
+		CanAppeal bool   `json:"canAppeal"`
+		Error     string `json:"error"`
+		Success   string `json:"success"`
+	}
+
 	if string(body) == "" {
 		return models.StatusInvalidCookie, nil
 	}
 
-	var data struct {
-		Error   string `json:"error"`
-		Success string `json:"success"`
-		Ban     []struct {
-			Enforcement string `json:"enforcement"`
-			Title       string `json:"title"`
-			CanAppeal   bool   `json:"canAppeal"`
-		} `json:"bans"`
-	}
-	err = json.Unmarshal(body, &data)
+	// err = json.NewDecoder(strings.NewReader(string(body))).Decode(&data)
+	err = json.NewDecoder(resp.Body).Decode(&data)
+
 	if err != nil {
-		return models.StatusUnknown, errors.New("failed to decode JSON response from check account request")
+		return models.StatusUnknown, errors.New("failed to decode JSON response possible no response was received")
 	}
+
 	if data.Error != "" || data.Success != "true" {
 		return models.StatusUnknown, errors.New("error checking account status: " + data.Error)
 	}
+
 	if len(data.Ban) == 0 {
 		return models.StatusGood, nil
-	}
-	for _, ban := range data.Ban {
-		if ban.Enforcement == "PERMANENT" {
-			return models.StatusPermaban, nil
-		} else if ban.Enforcement == "UNDER_REVIEW" {
-			return models.StatusShadowban, nil
-		} else {
-			return models.StatusGood, nil
+	} else {
+		for _, ban := range data.Ban {
+			if ban.Enforcement == "PERMANENT" {
+				return models.StatusPermaban, nil
+			} else if ban.Enforcement == "UNDER_REVIEW" {
+				return models.StatusShadowban, nil
+			} else {
+				return models.StatusGood, nil
+			}
 		}
 	}
 	return models.StatusUnknown, nil
@@ -121,11 +129,13 @@ func CheckAccountAge(ssoCookie string) (int, int, int, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
+		logger.Log.WithError(err).Error("Error decoding JSON response from check account age request")
 		return 0, 0, 0, errors.New("failed to decode JSON response from check account age request")
 	}
 
 	created, err := time.Parse(time.RFC3339, data.Created)
 	if err != nil {
+		logger.Log.WithError(err).Error("Error parsing created date in check account age request")
 		return 0, 0, 0, errors.New("failed to parse created date in check account age request")
 	}
 
