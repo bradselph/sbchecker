@@ -92,24 +92,35 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
-	if err != nil {
-		logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
-		return
-	}
+	go func() {
+		statusCode, err := services.VerifySSOCookie(account.SSOCookie)
+		if err != nil || statusCode != 200 {
+			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+				Flags:   discordgo.MessageFlagsEphemeral,
+				Content: "Invalid or Error verifying SSO cookie",
+			})
+			return
+		}
 
-	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
-		Description: fmt.Sprintf("The account is %d years, %d months, and %d days old.", years, months, days),
-		Color:       0x00ff00,
-	}
+		years, months, days, err := services.CheckAccountAge(account.SSOCookie)
+		if err != nil {
+			logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
+			return
+		}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{embed},
-		},
-	})
+		embed := &discordgo.MessageEmbed{
+			Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
+			Description: fmt.Sprintf("The account is %d years, %d months, and %d days old.", years, months, days),
+			Color:       0x00ff00,
+		}
+
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{embed},
+			},
+		})
+	}()
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {

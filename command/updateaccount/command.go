@@ -4,6 +4,7 @@ import (
 	"codstatusbot2.0/database"
 	"codstatusbot2.0/logger"
 	"codstatusbot2.0/models"
+	"codstatusbot2.0/services"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -119,17 +120,28 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	account.SSOCookie = newSSOCookie
-	account.LastStatus = models.StatusUnknown
-	account.IsExpiredCookie = false
-	account.LastCookieNotification = 0
-	tx.Save(&account)
-	tx.Commit()
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Account SSO cookie updated",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	})
+	go func() {
+		statusCode, err := services.VerifySSOCookie(newSSOCookie)
+		if err != nil || statusCode != 200 {
+			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+				Flags:   discordgo.MessageFlagsEphemeral,
+				Content: "Invalid or Error verifying new SSO cookie",
+			})
+			return
+		}
+
+		account.SSOCookie = newSSOCookie
+		account.LastStatus = models.StatusUnknown
+		account.IsExpiredCookie = false
+		account.LastCookieNotification = 0
+		tx.Save(&account)
+		tx.Commit()
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Account SSO cookie updated",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+	}()
 }
