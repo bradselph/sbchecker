@@ -1,12 +1,11 @@
 package addaccount
 
 import (
-	"codstatusbot/command/removeaccount"
-	"codstatusbot/database"
-	"codstatusbot/logger"
-	"codstatusbot/models"
-	"codstatusbot/services"
-
+	"codstatusbot2.0/command/removeaccount"
+	"codstatusbot2.0/database"
+	"codstatusbot2.0/logger"
+	"codstatusbot2.0/models"
+	"codstatusbot2.0/services"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -32,7 +31,6 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 		},
 	}
 
-	commands["addaccount"] = command
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error getting application commands")
@@ -66,7 +64,6 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-// UnregisterCommand removes the "addaccount" command from the Discord session for a specific guild.
 func UnregisterCommand(s *discordgo.Session, guildID string) {
 	commands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {
@@ -84,7 +81,6 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 	}
 }
 
-// CommandAddAccount handles the "addaccount" command when invoked.
 func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logger.Log.Info("Invoked addaccount command")
 
@@ -167,7 +163,7 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		})
 
 		removeaccount.UpdateAccountChoices(s, guildID)
-
-		go services.CheckSingleAccount(account, s)
+		// unnecessary to check account status immediately after adding it causes a double response when first adding an account
+		// services.CheckSingleAccount(account, s)
 	}()
 }
