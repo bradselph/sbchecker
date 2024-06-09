@@ -6,6 +6,7 @@ import (
 	"codstatusbot2.0/command/addaccount"
 	"codstatusbot2.0/command/help"
 	"codstatusbot2.0/command/removeaccount"
+	"codstatusbot2.0/command/setpreference"
 	"codstatusbot2.0/command/updateaccount"
 	"codstatusbot2.0/logger"
 
@@ -28,6 +29,10 @@ func RegisterCommands(s *discordgo.Session, guildID string) {
 	updateaccount.RegisterCommand(s, guildID)
 	Handlers["updateaccount"] = updateaccount.CommandUpdateAccount
 	logger.Log.Info("Registering updateaccount command")
+
+	setpreference.RegisterCommand(s, guildID)
+	Handlers["setpreference"] = setpreference.CommandSetPreference
+	logger.Log.Info("Registering setpreference command")
 
 	accountage.RegisterCommand(s, guildID)
 	Handlers["accountage"] = accountage.CommandAccountAge
@@ -54,6 +59,9 @@ func UnregisterCommands(s *discordgo.Session, guildID string) {
 	accountlogs.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering accountlogs command")
 
+	setpreference.UnregisterCommand(s, guildID)
+	logger.Log.Info("Unregistering setpreference command")
+
 	updateaccount.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering updateaccount command")
 
@@ -62,4 +70,5 @@ func UnregisterCommands(s *discordgo.Session, guildID string) {
 
 	help.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering help command")
+
 }

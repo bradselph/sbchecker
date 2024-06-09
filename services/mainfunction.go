@@ -40,7 +40,19 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 		Timestamp:   time.Now().Format(time.RFC3339),
 	}
 
-	_, err := discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
+	var channelID string
+	if account.InteractionType == "dm" {
+		channel, err := discord.UserChannelCreate(account.UserID)
+		if err != nil {
+			logger.Log.WithError(err).Error("Failed to create DM channel")
+			return
+		}
+		channelID = channel.ID
+	} else {
+		channelID = account.ChannelID
+	}
+
+	_, err := discord.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 		Embed: embed,
 	})
 	if err != nil {
@@ -131,7 +143,20 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 				Color:       0xff0000,
 				Timestamp:   time.Now().Format(time.RFC3339),
 			}
-			_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
+
+			var channelID string
+			if account.InteractionType == "dm" {
+				channel, err := discord.UserChannelCreate(account.UserID)
+				if err != nil {
+					logger.Log.WithError(err).Error("Failed to create DM channel")
+					return
+				}
+				channelID = channel.ID
+			} else {
+				channelID = account.ChannelID
+			}
+
+			_, err = discord.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 				Embed: embed,
 			})
 			if err != nil {
@@ -186,7 +211,20 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			Color:       GetColorForStatus(result, account.IsExpiredCookie),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
-		_, err = discord.ChannelMessageSendComplex(account.ChannelID, &discordgo.MessageSend{
+
+		var channelID string
+		if account.InteractionType == "dm" {
+			channel, err := discord.UserChannelCreate(account.UserID)
+			if err != nil {
+				logger.Log.WithError(err).Error("Failed to create DM channel")
+				return
+			}
+			channelID = channel.ID
+		} else {
+			channelID = account.ChannelID
+		}
+
+		_, err = discord.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 			Embed:   embed,
 			Content: fmt.Sprintf("<@%s>", account.UserID),
 		})
