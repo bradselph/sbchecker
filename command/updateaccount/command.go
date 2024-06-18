@@ -124,13 +124,12 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	// Verify the new SSO cookie
-	isValid := services.VerifySSOCookie(newSSOCookie)
-	if !isValid {
+	if !services.VerifySSOCookie(newSSOCookie) {
 		tx.Rollback()
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Invalid or error verifying new SSO cookie",
+				Content: "Invalid new SSO cookie",
 				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		})
