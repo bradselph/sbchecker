@@ -38,34 +38,6 @@ func VerifySSOCookie(ssoCookie string) bool {
 	return true
 }
 
-/*
-	func VerifySSOCookie(ssoCookie string) (int, error) {
-		logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
-		req, err := http.NewRequest("GET", url1, nil)
-		if err != nil {
-			return 0, errors.New("failed to create HTTP request to verify SSO cookie")
-		}
-		headers := GenerateHeaders(ssoCookie)
-		for k, v := range headers {
-			req.Header.Set(k, v)
-		}
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return 0, errors.New("failed to send HTTP request to verify SSO cookie")
-		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return 0, errors.New("failed to read response body from verify SSO cookie request")
-		}
-		if string(body) == "" {
-			return 0, nil
-		}
-		return resp.StatusCode, nil
-	}
-*/
-
 func CheckAccount(ssoCookie string) (models.Status, error) {
 	logger.Log.Info("Starting CheckAccount function")
 	req, err := http.NewRequest("GET", url1, nil)
