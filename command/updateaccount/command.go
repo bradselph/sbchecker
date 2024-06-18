@@ -121,11 +121,11 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	go func() {
-		statusCode, err := services.VerifySSOCookie(newSSOCookie)
-		if err != nil || statusCode != 200 {
+		isValid := services.VerifySSOCookie(newSSOCookie)
+		if !isValid {
 			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
 				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid or Error verifying new SSO cookie",
+				Content: "Invalid or error verifying new SSO cookie",
 			})
 			return
 		}

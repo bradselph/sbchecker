@@ -1,3 +1,11 @@
+TODO updating the verify ssocookie functions to better handle invalid status and adding clear error responses to better diagnose errors
+
+
+TODO fix wrong status being shown currently returns status as good for a perma banned account
+
+TODO fix update account not responding
+
+
 TODO after removing a account the account list needs to be updated somehow as the title of the remove account still shows as option for all commands
     TODO still working on remove account options
         might try adding a delay after removing account to possibly allow discord to clear and update the cache

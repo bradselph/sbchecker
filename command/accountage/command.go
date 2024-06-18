@@ -82,45 +82,74 @@ func CommandAccountAge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 
 	var account models.Account
-	database.DB.Where("id = ?", accountId).First(&account)
+	result := database.DB.Where("id = ?", accountId).First(&account)
+	if result.Error != nil {
+		logger.Log.WithError(result.Error).Error("Error retrieving account")
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Error retrieving account information",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
+	}
 
 	if account.UserID != userID {
 		logger.Log.WithFields(map[string]interface{}{
 			"account_id": accountId,
 			"user_id":    userID,
 		}).Warn("User tried to check age for account they don't own")
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "You don't own this account.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
-	go func() {
-		statusCode, err := services.VerifySSOCookie(account.SSOCookie)
-		if err != nil || statusCode != 200 {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid or Error verifying SSO cookie",
-			})
-			return
-		}
-
-		years, months, days, err := services.CheckAccountAge(account.SSOCookie)
-		if err != nil {
-			logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
-			return
-		}
-
-		embed := &discordgo.MessageEmbed{
-			Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
-			Description: fmt.Sprintf("The account is %d years, %d months, and %d days old.", years, months, days),
-			Color:       0x00ff00,
-		}
+	if !services.VerifySSOCookie(account.SSOCookie) {
+		account.IsExpiredCookie = true // Update account's IsExpiredCookie flag
+		database.DB.Save(&account)
 
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{embed},
+				Content: "Invalid SSOCookie. Account's cookie status updated.",
+				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		})
-	}()
+		return
+	}
+
+	years, months, days, err := services.CheckAccountAge(account.SSOCookie)
+	if err != nil {
+		logger.Log.WithError(err).Errorf("Error checking account age for account %s", account.Title)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "There was an error checking the account age.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Title:       fmt.Sprintf("%s - %s", account.Title, account.LastStatus),
+		Description: fmt.Sprintf("The account is %d years, %d months, and %d days old.", years, months, days),
+		Color:       0x00ff00,
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{embed},
+			Flags:  discordgo.MessageFlagsEphemeral,
+		},
+	})
 }
 
 func getAllChoices(guildID string) []*discordgo.ApplicationCommandOptionChoice {

@@ -120,21 +120,11 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	})
 
 	go func() {
-		statusCode, err := services.VerifySSOCookie(ssoCookie)
-		if err != nil {
+		isValid := services.VerifySSOCookie(ssoCookie)
+		if !isValid {
 			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
 				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Error verifying SSO cookie",
-			})
-			return
-		}
-
-		logger.Log.WithField("status_code", statusCode).Info("SSO cookie verification status")
-
-		if statusCode != 200 {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid SSO cookie",
+				Content: "Invalid or error verifying SSO cookie",
 			})
 			return
 		}

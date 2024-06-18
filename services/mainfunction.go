@@ -19,22 +19,22 @@ var notificationInterval string
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		logger.Log.WithError(err).Error("Failed to load .env file")
+		logger.Log.WithError(err).Error("Failed to load .env file ")
 	}
 	notificationInterval = os.Getenv("NOTIFICATION_INTERVAL")
 }
 
 func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
-	logger.Log.Infof("Sending daily update for account %s", account.Title)
+	logger.Log.Infof("Sending daily update for account %s ", account.Title)
 	var description string
 	if account.IsExpiredCookie {
-		description = fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command.", account.Title)
+		description = fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command. ", account.Title)
 	} else {
-		description = fmt.Sprintf("The last status of account %s was %s.", account.Title, account.LastStatus)
+		description = fmt.Sprintf("The last status of account %s was %s. ", account.Title, account.LastStatus)
 	}
 
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s Hour Update - %s", notificationInterval, account.Title),
+		Title:       fmt.Sprintf("%s Hour Update - %s ", notificationInterval, account.Title),
 		Description: description,
 		Color:       GetColorForStatus(account.LastStatus, account.IsExpiredCookie),
 		Timestamp:   time.Now().Format(time.RFC3339),
@@ -58,10 +58,10 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 
 func CheckAccounts(s *discordgo.Session) {
 	for {
-		logger.Log.Info("Starting periodic account check")
+		logger.Log.Info("Starting periodic account check ")
 		var accounts []models.Account
 		if err := database.DB.Find(&accounts).Error; err != nil {
-			logger.Log.WithError(err).Error("Failed to fetch accounts from the database")
+			logger.Log.WithError(err).Error("Failed to fetch accounts from the database ")
 			continue
 		}
 
@@ -76,13 +76,13 @@ func CheckAccounts(s *discordgo.Session) {
 			}
 
 			if account.IsExpiredCookie {
-				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie")
+				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie ")
 				notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
 				if time.Since(lastNotification).Hours() > notificationInterval {
 					go sendDailyUpdate(account, s)
 				} else {
 
-					logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping")
+					logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping ")
 
 				}
 				continue
@@ -93,7 +93,7 @@ func CheckAccounts(s *discordgo.Session) {
 				go CheckSingleAccount(account, s)
 			} else {
 
-				logger.Log.WithField("account", account.Title).Info("Account ", account.Title, "checked recently less than ", checkInterval, "ago, skipping")
+				logger.Log.WithField("account", account.Title).Info("Account ", account.Title, "checked recently less than ", checkInterval, "ago, skipping ")
 
 			}
 
@@ -102,7 +102,7 @@ func CheckAccounts(s *discordgo.Session) {
 				go sendDailyUpdate(account, s)
 			} else {
 
-				logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping")
+				logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping ")
 
 			}
 		}
@@ -170,7 +170,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 
 			return
 		}
-		logger.Log.Infof("Account %s status changed to %s", account.Title, result)
+		logger.Log.Infof("Account %s status changed to %s ", account.Title, result)
 		ban := models.Ban{
 			Account:   account,
 			Status:    result,
