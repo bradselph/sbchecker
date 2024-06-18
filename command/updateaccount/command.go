@@ -96,20 +96,23 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 }
 
 func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	tx := database.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
 	userID := i.Member.User.ID
 	guildID := i.GuildID
 	accountId := i.ApplicationCommandData().Options[0].IntValue()
 	newSSOCookie := i.ApplicationCommandData().Options[1].StringValue()
 
 	var account models.Account
+	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	result := tx.Where("user_id = ? AND id = ? AND guild_id = ?", userID, accountId, guildID).First(&account)
 	if result.Error != nil {
+		tx.Rollback()
+		logger.Log.WithError(result.Error).Error("Error retrieving account")
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -120,28 +123,34 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	go func() {
-		isValid := services.VerifySSOCookie(newSSOCookie)
-		if !isValid {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid or error verifying new SSO cookie",
-			})
-			return
-		}
-
-		account.SSOCookie = newSSOCookie
-		account.LastStatus = models.StatusUnknown
-		account.IsExpiredCookie = false
-		account.LastCookieNotification = 0
-		tx.Save(&account)
-		tx.Commit()
+	// Verify the new SSO cookie
+	isValid := services.VerifySSOCookie(newSSOCookie)
+	if !isValid {
+		tx.Rollback()
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Account SSO cookie updated",
+				Content: "Invalid or error verifying new SSO cookie",
 				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		})
-	}()
+		return
+	}
+
+	// Update the account with the new SSO cookie
+	account.SSOCookie = newSSOCookie
+	account.LastStatus = models.StatusUnknown
+	account.IsExpiredCookie = false
+	account.LastCookieNotification = 0
+
+	tx.Save(&account)
+	tx.Commit()
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Account SSO cookie updated",
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
 }
