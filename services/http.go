@@ -13,11 +13,12 @@ import (
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
-func VerifySSOCookie(ssoCookie string) (int, error) {
+func VerifySSOCookie(ssoCookie string) bool {
 	logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
-	req, err := http.NewRequest("GET", url1, nil)
+	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
-		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
+		logger.Log.WithError(err).Error("Error creating verification request")
+		return false
 	}
 	headers := GenerateHeaders(ssoCookie)
 	for k, v := range headers {
@@ -26,17 +27,15 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, errors.New("failed to send HTTP request to verify SSO cookie")
+		logger.Log.WithError(err).Error("Error sending verification request")
+		return false
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return 0, errors.New("failed to read response body from verify SSO cookie request")
+	if resp.StatusCode != http.StatusOK {
+		logger.Log.Errorf("Invalid SSOCookie, status code: %d", resp.StatusCode)
+		return false
 	}
-	if string(body) == "" {
-		return 0, nil
-	}
-	return resp.StatusCode, nil
+	return true
 }
 
 func CheckAccount(ssoCookie string) (models.Status, error) {
