@@ -183,6 +183,8 @@ This command allows you to set the preference for the bot to send notifications 
 * You can only set the preference for your own account. The preference is stored per user, so it will apply to all accounts you add.
 * You can change your preference at any time by using this command again.
 * Setting the preference to `dm` will only send notifications to your direct messages inbox and not to the channel where the account was added. This is useful if you want to keep the notifications private and not share them with the rest of the server. If you want to share the notifications with the rest of the server, you can set the preference to 'channel' and the bot will send the notifications to the channel where the account was added.
+### Important
+  * Please note that you must use a channel to send commands as the bot does not respond to any messages or commands in the DMs. Only the notifications will go to your DMs if you set the preference to `dm`.
 
 ## Notifications
 
