@@ -28,13 +28,13 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	logger.Log.Infof("Sending daily update for account %s", account.Title)
 	var description string
 	if account.IsExpiredCookie {
-		description = fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command.", account.Title)
+		description = fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command. ", account.Title)
 	} else {
-		description = fmt.Sprintf("The last status of account %s was %s.", account.Title, account.LastStatus)
+		description = fmt.Sprintf("The last status of account %s was %s. ", account.Title, account.LastStatus)
 	}
 
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s Hour Update - %s", notificationInterval, account.Title),
+		Title:       fmt.Sprintf(" %s Hour Update - %s ", notificationInterval, account.Title),
 		Description: description,
 		Color:       GetColorForStatus(account.LastStatus, account.IsExpiredCookie),
 		Timestamp:   time.Now().Format(time.RFC3339),
@@ -44,7 +44,7 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	if account.InteractionType == "dm" {
 		channel, err := discord.UserChannelCreate(account.UserID)
 		if err != nil {
-			logger.Log.WithError(err).Error("Failed to create DM channel")
+			logger.Log.WithError(err).Error(" Failed to create DM channel ")
 			return
 		}
 		channelID = channel.ID
@@ -56,24 +56,24 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 		Embed: embed,
 	})
 	if err != nil {
-		logger.Log.WithError(err).Error("Failed to send scheduled update message for account ", account.Title)
+		logger.Log.WithError(err).Error(" Failed to send scheduled update message for account ", account.Title)
 
 	}
 
 	account.LastCheck = time.Now().Unix()
 	account.LastNotification = time.Now().Unix()
 	if err := database.DB.Save(&account).Error; err != nil {
-		logger.Log.WithError(err).Error("Failed to save account changes for account ", account.Title)
+		logger.Log.WithError(err).Error(" Failed to save account changes for account ", account.Title)
 
 	}
 }
 
 func CheckAccounts(s *discordgo.Session) {
 	for {
-		logger.Log.Info("Starting periodic account check")
+		logger.Log.Info(" Starting periodic account check ")
 		var accounts []models.Account
 		if err := database.DB.Find(&accounts).Error; err != nil {
-			logger.Log.WithError(err).Error("Failed to fetch accounts from the database")
+			logger.Log.WithError(err).Error(" Failed to fetch accounts from the database ")
 			continue
 		}
 
@@ -88,13 +88,13 @@ func CheckAccounts(s *discordgo.Session) {
 			}
 
 			if account.IsExpiredCookie {
-				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie")
+				logger.Log.WithField(" account ", account.Title).Info(" Skipping account with expired cookie ")
 				notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
 				if time.Since(lastNotification).Hours() > notificationInterval {
 					go sendDailyUpdate(account, s)
 				} else {
 
-					logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping")
+					logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
 
 				}
 				continue
@@ -105,7 +105,7 @@ func CheckAccounts(s *discordgo.Session) {
 				go CheckSingleAccount(account, s)
 			} else {
 
-				logger.Log.WithField("account", account.Title).Info("Account ", account.Title, "checked recently less than ", checkInterval, "ago, skipping")
+				logger.Log.WithField("account ", account.Title).Info(" Account ", account.Title, " checked recently less than ", checkInterval, " Minutes ago, skipping ")
 
 			}
 
@@ -114,7 +114,7 @@ func CheckAccounts(s *discordgo.Session) {
 				go sendDailyUpdate(account, s)
 			} else {
 
-				logger.Log.WithField("account", account.Title).Info("Owner of ", account.Title, "recently notified within ", notificationInterval, "Hours already, skipping")
+				logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
 
 			}
 		}
@@ -127,7 +127,7 @@ func CheckAccounts(s *discordgo.Session) {
 func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	result, err := CheckAccount(account.SSOCookie)
 	if err != nil {
-		logger.Log.WithError(err).Error("Failed to check account ", account.Title, "possible expired SSO Cookie")
+		logger.Log.WithError(err).Error(" Failed to check account ", account.Title, " possible expired SSO Cookie ")
 		return
 	}
 
@@ -135,11 +135,11 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		cooldownDuration, _ := strconv.ParseFloat(os.Getenv("COOLDOWN_DURATION"), 64)
 		lastNotification := time.Unix(account.LastCookieNotification, 0)
 		if time.Since(lastNotification) >= time.Duration(cooldownDuration)*time.Hour || account.LastCookieNotification == 0 {
-			logger.Log.Infof("Account %s has an invalid SSO cookie", account.Title)
+			logger.Log.Infof(" Account %s has an invalid SSO cookie ", account.Title)
 			embed := &discordgo.MessageEmbed{
 
-				Title:       fmt.Sprintf("%s - Invalid SSO Cookie ", account.Title),
-				Description: fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /deleteaccount command.", account.Title),
+				Title:       fmt.Sprintf(" %s - Invalid SSO Cookie ", account.Title),
+				Description: fmt.Sprintf(" The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command. ", account.Title),
 				Color:       0xff0000,
 				Timestamp:   time.Now().Format(time.RFC3339),
 			}
@@ -148,7 +148,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			if account.InteractionType == "dm" {
 				channel, err := discord.UserChannelCreate(account.UserID)
 				if err != nil {
-					logger.Log.WithError(err).Error("Failed to create DM channel")
+					logger.Log.WithError(err).Error(" Failed to create DM channel ")
 					return
 				}
 				channelID = channel.ID
@@ -161,7 +161,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			})
 			if err != nil {
 
-				logger.Log.WithError(err).Error("Failed to send invalid cookie notification for account ", account.Title)
+				logger.Log.WithError(err).Error(" Failed to send invalid cookie notification for account ", account.Title)
 
 			}
 
@@ -169,10 +169,10 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 			account.IsExpiredCookie = true
 			if err := database.DB.Save(&account).Error; err != nil {
 
-				logger.Log.WithError(err).Error("Failed to save account changes for account ", account.Title)
+				logger.Log.WithError(err).Error(" Failed to save account changes for account ", account.Title)
 			}
 		} else {
-			logger.Log.Infof("Skipping expired cookie notification for account %s (cooldown) ", account.Title)
+			logger.Log.Infof(" Skipping expired cookie notification for account %s (cooldown) ", account.Title)
 
 		}
 		return
@@ -183,7 +183,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 	account.IsExpiredCookie = false
 	if err := database.DB.Save(&account).Error; err != nil {
 
-		logger.Log.WithError(err).Error("Failed to save account changes for account ", account.Title)
+		logger.Log.WithError(err).Error(" Failed to save account changes for account ", account.Title)
 
 		return
 	}
@@ -191,11 +191,11 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		account.LastStatus = result
 		if err := database.DB.Save(&account).Error; err != nil {
 
-			logger.Log.WithError(err).Error("Failed to save account changes for account ", account.Title)
+			logger.Log.WithError(err).Error(" Failed to save account changes for account ", account.Title)
 
 			return
 		}
-		logger.Log.Infof("Account %s status changed to %s", account.Title, result)
+		logger.Log.Infof(" Account %s status changed to %s ", account.Title, result)
 		ban := models.Ban{
 			Account:   account,
 			Status:    result,
@@ -203,11 +203,11 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		}
 		if err := database.DB.Create(&ban).Error; err != nil {
 
-			logger.Log.WithError(err).Error("Failed to create new ban record for account ", account.Title)
+			logger.Log.WithError(err).Error(" Failed to create new ban record for account ", account.Title)
 		}
 		embed := &discordgo.MessageEmbed{
-			Title:       fmt.Sprintf("%s - %s", account.Title, EmbedTitleFromStatus(result)),
-			Description: fmt.Sprintf("The status of account %s has changed to %s <@%s>", account.Title, result, account.UserID),
+			Title:       fmt.Sprintf(" %s - %s ", account.Title, EmbedTitleFromStatus(result)),
+			Description: fmt.Sprintf(" The status of account %s has changed to %s <@%s> ", account.Title, result, account.UserID),
 			Color:       GetColorForStatus(result, account.IsExpiredCookie),
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}
@@ -216,7 +216,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		if account.InteractionType == "dm" {
 			channel, err := discord.UserChannelCreate(account.UserID)
 			if err != nil {
-				logger.Log.WithError(err).Error("Failed to create DM channel")
+				logger.Log.WithError(err).Error(" Failed to create DM channel ")
 				return
 			}
 			channelID = channel.ID
@@ -226,11 +226,11 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 
 		_, err = discord.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 			Embed:   embed,
-			Content: fmt.Sprintf("<@%s>", account.UserID),
+			Content: fmt.Sprintf(" <@%s> ", account.UserID),
 		})
 		if err != nil {
 
-			logger.Log.WithError(err).Error("Failed to send status update message for account ", account.Title)
+			logger.Log.WithError(err).Error(" Failed to send status update message for account ", account.Title)
 
 		}
 	}
