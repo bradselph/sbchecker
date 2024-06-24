@@ -80,7 +80,7 @@ func CommandHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{embed},
-			Flags:  64,
+			Flags:  discordgo.MessageFlagsEphemeral,
 		},
 	})
 }
