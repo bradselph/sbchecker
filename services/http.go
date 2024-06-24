@@ -14,7 +14,7 @@ var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
 func VerifySSOCookie(ssoCookie string) bool {
-	logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
+	logger.Log.Infof("Verifying SSO cookie: %s ", ssoCookie)
 	req, err := http.NewRequest("GET", url2, nil)
 	if err != nil {
 		logger.Log.WithError(err).Error("Error creating verification request")
@@ -32,7 +32,16 @@ func VerifySSOCookie(ssoCookie string) bool {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		logger.Log.Errorf("Invalid SSOCookie, status code: %d", resp.StatusCode)
+		logger.Log.Errorf("Invalid SSOCookie, status code: %d ", resp.StatusCode)
+		return false
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error reading verification response body")
+		return false
+	}
+	if len(body) == 0 {
+		logger.Log.Error("Invalid SSOCookie, response body is empty")
 		return false
 	}
 	return true
@@ -58,7 +67,7 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to read response body from check account request")
 	}
-	logger.Log.Info("Response Body: ", string(body))
+	// logger.Log.Info("Response Body: ", string(body))
 	var data struct {
 		Ban []struct {
 			Enforcement string `json:"enforcement"`
