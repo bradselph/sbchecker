@@ -98,7 +98,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Account does not exist",
-				Flags:   64,
+				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		})
 		tx.Rollback()
@@ -118,7 +118,7 @@ func CommandRemoveAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Account removed",
-			Flags:   64,
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 	UpdateAccountChoices(s, guildID)
