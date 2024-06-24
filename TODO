@@ -12,3 +12,13 @@ TODO create some form of maintenance routine for purging old database entries wi
 TODO create end user documentation for the bot
 
 TODO create privacy policy for the bot
+
+
+TODO possibly need to run this sql script to add preferences functionality to the database
+
+    ```
+    ALTER TABLE accounts
+    DROP FOREIGN KEY fk_users_accounts,
+    ADD CONSTRAINT fk_users_accounts
+    FOREIGN KEY (user_id) REFERENCES users(user_id);
+    ```
