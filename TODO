@@ -1,8 +1,8 @@
 TODO ensure new DM vs channel interactions configuration is functioning properly
+    currently a user has to set it for each account, but it should be a global setting
+
 
 TODO finish testing account functions with new verify sso method
-
-TODO check to see how the cookie is being verified with each function that uses it
 
 
 TODO implement some type of encryption for possibly sensitive data in the database
@@ -12,8 +12,3 @@ TODO create some form of maintenance routine for purging old database entries wi
 TODO create end user documentation for the bot
 
 TODO create privacy policy for the bot
-
-
-
-TODO
-    DONE accept fact that discord updates the account options after a delay and that the bot cannot force an update to the account options
