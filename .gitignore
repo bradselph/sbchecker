@@ -1,3 +1,4 @@
 .env
 /.idea
 /logs/*.log
+logs/2024-06-27.txt
