@@ -16,7 +16,8 @@ type Account struct {
 	LastCookieNotification int64  // The timestamp of the last notification sent out on the account for an expired ssocookie.
 	SSOCookie              string // The SSO cookie associated with the account.
 	Created                string // The timestamp of when the account was created on Activision.
-	IsExpiredCookie        bool   `gorm:"default:false"` // A flag indicating if the SSO cookie has expired.
+	IsExpiredCookie        bool   `gorm:"default:false"`   // A flag indicating if the SSO cookie has expired.
+	InteractionType        string `gorm:"default:channel"` // The type of interaction the user has with the bot, can be channel or dm
 }
 
 type Status string

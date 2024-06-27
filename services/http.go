@@ -13,11 +13,52 @@ import (
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
-func VerifySSOCookie(ssoCookie string) (int, error) {
-	logger.Log.Infof("Verifying SSO cookie: %s", ssoCookie)
-	req, err := http.NewRequest("GET", url1, nil)
+// var url3 = "https://profile.callofduty.com/promotions/redeemCode/"
+
+/*
+func ClaimSingleReward(ssoCookie, code string) (string, error) {
+	logger.Log.Info("Starting ClaimSingleReward function")
+	req, err := http.NewRequest("POST", url3, strings.NewReader(fmt.Sprintf("code=%s", code)))
 	if err != nil {
-		return 0, errors.New("failed to create HTTP request to verify SSO cookie")
+		return "", fmt.Errorf("failed to create HTTP request to claim reward: %w", err)
+	}
+	headers := GeneratePostHeaders(ssoCookie)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to send HTTP request to claim reward: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+	if strings.Contains(string(body), "redemption-success") {
+		start := strings.Index(string(body), "Just Unlocked:<br><br><div class=\"accent-highlight mw2\">")
+		end := strings.Index(string(body), "</div></h4>")
+		if start != -1 && end != -1 {
+			unlockedItem := strings.TrimSpace(string(body)[start+len("Just Unlocked:<br><br><div class=\"accent-highlight mw2\">") : end])
+			return fmt.Sprintf("Successfully claimed reward: %s", unlockedItem), nil
+		}
+		return "Successfully claimed reward, but couldn't extract details", nil
+	}
+	logger.Log.Infof("Unexpected response body: %s", string(body))
+	return "", fmt.Errorf("failed to claim reward: unexpected response")
+}
+*/
+
+func VerifySSOCookie(ssoCookie string) bool {
+	logger.Log.Infof("Verifying SSO cookie: %s ", ssoCookie)
+	req, err := http.NewRequest("GET", url2, nil)
+	if err != nil {
+		logger.Log.WithError(err).Error("Error creating verification request")
+		return false
 	}
 	headers := GenerateHeaders(ssoCookie)
 	for k, v := range headers {
@@ -26,17 +67,24 @@ func VerifySSOCookie(ssoCookie string) (int, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, errors.New("failed to send HTTP request to verify SSO cookie")
+		logger.Log.WithError(err).Error("Error sending verification request")
+		return false
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		logger.Log.Errorf("Invalid SSOCookie, status code: %d ", resp.StatusCode)
+		return false
+	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return 0, errors.New("failed to read response body from verify SSO cookie request")
+		logger.Log.WithError(err).Error("Error reading verification response body")
+		return false
 	}
-	if string(body) == "" {
-		return 0, nil
+	if len(body) == 0 {
+		logger.Log.Error("Invalid SSOCookie, response body is empty")
+		return false
 	}
-	return resp.StatusCode, nil
+	return true
 }
 
 func CheckAccount(ssoCookie string) (models.Status, error) {
@@ -59,7 +107,7 @@ func CheckAccount(ssoCookie string) (models.Status, error) {
 	if err != nil {
 		return models.StatusUnknown, errors.New("failed to read response body from check account request")
 	}
-	logger.Log.Info("Response Body: ", string(body))
+	// logger.Log.Info("Response Body: ", string(body))
 	var data struct {
 		Ban []struct {
 			Enforcement string `json:"enforcement"`

@@ -112,58 +112,50 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	isValid := services.VerifySSOCookie(ssoCookie)
+	if !isValid {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Invalid or error verifying SSO cookie",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
+	}
+
+	account = models.Account{
+		UserID:          userID,
+		Title:           title,
+		SSOCookie:       ssoCookie,
+		GuildID:         guildID,
+		ChannelID:       channelID,
+		InteractionType: "channel",
+	}
+
+	result = database.DB.Create(&account)
+	if result.Error != nil {
+		logger.Log.WithError(result.Error).Error("Error creating account")
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Error creating account",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
+	}
+
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Flags: discordgo.MessageFlagsEphemeral,
+			Content: "Account added",
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 
-	go func() {
-		statusCode, err := services.VerifySSOCookie(ssoCookie)
-		if err != nil {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Error verifying SSO cookie",
-			})
-			return
-		}
+	removeaccount.UpdateAccountChoices(s, guildID)
+	// unnecessary to check account status immediately after adding it causes a double response when first adding an account
+	// services.CheckSingleAccount(account, s)
 
-		logger.Log.WithField("status_code", statusCode).Info("SSO cookie verification status")
-
-		if statusCode != 200 {
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Invalid SSO cookie",
-			})
-			return
-		}
-
-		account = models.Account{
-			UserID:    userID,
-			Title:     title,
-			SSOCookie: ssoCookie,
-			GuildID:   guildID,
-			ChannelID: channelID,
-		}
-
-		result := database.DB.Create(&account)
-		if result.Error != nil {
-			logger.Log.WithError(result.Error).Error("Error creating account")
-			s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "Error creating account",
-			})
-			return
-		}
-
-		s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-			Flags:   discordgo.MessageFlagsEphemeral,
-			Content: "Account added",
-		})
-
-		removeaccount.UpdateAccountChoices(s, guildID)
-		// unnecessary to check account status immediately after adding it causes a double response when first adding an account
-		// services.CheckSingleAccount(account, s)
-	}()
 }

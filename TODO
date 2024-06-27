@@ -1,10 +1,29 @@
-TODO after removing a account the account list needs to be updated somehow as the title of the remove account still shows as option for all commands
-    TODO still working on remove account options
-        might try adding a delay after removing account to possibly allow discord to clear and update the cache
+TODO finish testing account functions with new verify sso method
+
+
+
+TODO fix disabled functions
+        claimrewards function
+           TODO fix the claim rewards commands as once its called it crashes entire bot
+                preferences function
+           TODO work on the DM vs channel command its disabled for now
+                TODO ensure new DM vs channel interactions configuration is functioning properly
+                 currently a user has to set it for each account, but it should be a global setting
+
 
 TODO implement some type of encryption for possibly sensitive data in the database
 
 TODO create some form of maintenance routine for purging old database entries with expired cookies without user activity.
 
 TODO create end user documentation for the bot
+
 TODO create privacy policy for the bot
+
+TODO possibly need to run this sql script to add preferences functionality to the database
+
+    ```
+    ALTER TABLE accounts
+    DROP FOREIGN KEY fk_users_accounts,
+    ADD CONSTRAINT fk_users_accounts
+    FOREIGN KEY (user_id) REFERENCES users(user_id);
+    ```

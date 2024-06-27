@@ -29,6 +29,12 @@ func RegisterCommands(s *discordgo.Session, guildID string) {
 	Handlers["updateaccount"] = updateaccount.CommandUpdateAccount
 	logger.Log.Info("Registering updateaccount command")
 
+	/*
+		setpreference.RegisterCommand(s, guildID)
+		Handlers["setpreference"] = setpreference.CommandSetPreference
+		logger.Log.Info("Registering setpreference command")
+	*/
+
 	accountage.RegisterCommand(s, guildID)
 	Handlers["accountage"] = accountage.CommandAccountAge
 	logger.Log.Info("Registering accountage command")
@@ -36,6 +42,12 @@ func RegisterCommands(s *discordgo.Session, guildID string) {
 	addaccount.RegisterCommand(s, guildID)
 	Handlers["addaccount"] = addaccount.CommandAddAccount
 	logger.Log.Info("Registering addaccount command")
+
+	/*
+		claimrewards.RegisterCommand(s, guildID)
+		Handlers["claimavailablerewards"] = claimrewards.CommandClaimRewards
+		logger.Log.Info("Registering claimavailablerewards command")
+	*/
 
 	help.RegisterCommand(s, guildID)
 	Handlers["help"] = help.CommandHelp
@@ -54,12 +66,22 @@ func UnregisterCommands(s *discordgo.Session, guildID string) {
 	accountlogs.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering accountlogs command")
 
+	/*
+		setpreference.UnregisterCommand(s, guildID)
+		logger.Log.Info("Unregistering setpreference command")
+	*/
+
 	updateaccount.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering updateaccount command")
 
 	accountage.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering accountage command")
 
+	/*
+		claimrewards.UnregisterCommand(s, guildID)
+		logger.Log.Info("Unregistering claimavailablerewards command")
+	*/
 	help.UnregisterCommand(s, guildID)
 	logger.Log.Info("Unregistering help command")
+
 }
