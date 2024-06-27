@@ -89,7 +89,7 @@ func UnregisterCommand(s *discordgo.Session, guildID string) {
 		logger.Log.Infof("Deleting command %s", command.Name)
 		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, command.ID)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("Error deleting command %s", command.Name)
+			logger.Log.WithError(err).Errorf("Error deleting command %s ", command.Name)
 			return
 		}
 	}
@@ -123,7 +123,6 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	// Verify the new SSO cookie
 	if !services.VerifySSOCookie(newSSOCookie) {
 		tx.Rollback()
 
@@ -137,19 +136,6 @@ func CommandUpdateAccount(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 
-	/*
-		go func() {
-			statusCode, err := services.VerifySSOCookie(newSSOCookie)
-			if err != nil || statusCode != 200 {
-				s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
-					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: "Invalid or Error verifying new SSO cookie",
-				})
-				return
-			}
-	*/
-
-	// Update the account with the new SSO cookie
 	account.SSOCookie = newSSOCookie
 	account.LastStatus = models.StatusUnknown
 	account.IsExpiredCookie = false
