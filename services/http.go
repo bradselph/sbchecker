@@ -13,6 +13,46 @@ import (
 var url1 = "https://support.activision.com/api/bans/appeal?locale=en"
 var url2 = "https://support.activision.com/api/profile?accts=false"
 
+// var url3 = "https://profile.callofduty.com/promotions/redeemCode/"
+
+/*
+func ClaimSingleReward(ssoCookie, code string) (string, error) {
+	logger.Log.Info("Starting ClaimSingleReward function")
+	req, err := http.NewRequest("POST", url3, strings.NewReader(fmt.Sprintf("code=%s", code)))
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request to claim reward: %w", err)
+	}
+	headers := GeneratePostHeaders(ssoCookie)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to send HTTP request to claim reward: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+	if strings.Contains(string(body), "redemption-success") {
+		start := strings.Index(string(body), "Just Unlocked:<br><br><div class=\"accent-highlight mw2\">")
+		end := strings.Index(string(body), "</div></h4>")
+		if start != -1 && end != -1 {
+			unlockedItem := strings.TrimSpace(string(body)[start+len("Just Unlocked:<br><br><div class=\"accent-highlight mw2\">") : end])
+			return fmt.Sprintf("Successfully claimed reward: %s", unlockedItem), nil
+		}
+		return "Successfully claimed reward, but couldn't extract details", nil
+	}
+	logger.Log.Infof("Unexpected response body: %s", string(body))
+	return "", fmt.Errorf("failed to claim reward: unexpected response")
+}
+*/
+
 func VerifySSOCookie(ssoCookie string) bool {
 	logger.Log.Infof("Verifying SSO cookie: %s ", ssoCookie)
 	req, err := http.NewRequest("GET", url2, nil)
