@@ -1,8 +1,14 @@
-TODO ensure new DM vs channel interactions configuration is functioning properly
-    currently a user has to set it for each account, but it should be a global setting
-
-
 TODO finish testing account functions with new verify sso method
+
+
+
+TODO fix disabled functions
+        claimrewards function
+           TODO fix the claim rewards commands as once its called it crashes entire bot
+                preferences function
+           TODO work on the DM vs channel command its disabled for now
+                TODO ensure new DM vs channel interactions configuration is functioning properly
+                 currently a user has to set it for each account, but it should be a global setting
 
 
 TODO implement some type of encryption for possibly sensitive data in the database
@@ -12,7 +18,6 @@ TODO create some form of maintenance routine for purging old database entries wi
 TODO create end user documentation for the bot
 
 TODO create privacy policy for the bot
-
 
 TODO possibly need to run this sql script to add preferences functionality to the database
 
