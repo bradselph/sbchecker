@@ -153,6 +153,7 @@ This command displays the age of a specific account.
 
 ### /setpreference
 
+**This command is currently dissabled as im still working on it**
 This command allows you to set the preference for the bot to send notifications to the channel where the account was added or to your direct messages inbox (DMs).
 
 **Usage:**
