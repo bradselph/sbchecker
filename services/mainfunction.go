@@ -68,12 +68,48 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	}
 }
 
+func sendExpiredCookieNotification(account models.Account, discord *discordgo.Session) {
+	logger.Log.Infof("Sending expired cookie notification for account %s ", account.Title)
+	description := fmt.Sprintf("The SSO cookie for account %s has expired. Please update the cookie using the /updateaccount command or delete the account using the /removeaccount command.", account.Title)
+
+	embed := &discordgo.MessageEmbed{
+		Title:       fmt.Sprintf("Expired Cookie - %s", account.Title),
+		Description: description,
+		Color:       0xff0000, // Red color for expired cookie
+		Timestamp:   time.Now().Format(time.RFC3339),
+	}
+
+	var channelID string
+	if account.InteractionType == "dm" {
+		channel, err := discord.UserChannelCreate(account.UserID)
+		if err != nil {
+			logger.Log.WithError(err).Error("Failed to create DM channel")
+			return
+		}
+		channelID = channel.ID
+	} else {
+		channelID = account.ChannelID
+	}
+
+	_, err := discord.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
+		Embed: embed,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Error("Failed to send expired cookie notification for account", account.Title)
+	}
+
+	account.LastNotification = time.Now().Unix()
+	if err := database.DB.Save(&account).Error; err != nil {
+		logger.Log.WithError(err).Error("Failed to save account changes for account", account.Title)
+	}
+}
+
 func CheckAccounts(s *discordgo.Session) {
 	for {
-		logger.Log.Info(" Starting periodic account check ")
+		logger.Log.Info("Starting periodic account check")
 		var accounts []models.Account
 		if err := database.DB.Find(&accounts).Error; err != nil {
-			logger.Log.WithError(err).Error(" Failed to fetch accounts from the database ")
+			logger.Log.WithError(err).Error("Failed to fetch accounts from the database")
 			continue
 		}
 
@@ -88,14 +124,12 @@ func CheckAccounts(s *discordgo.Session) {
 			}
 
 			if account.IsExpiredCookie {
-				logger.Log.WithField(" account ", account.Title).Info(" Skipping account with expired cookie ")
+				logger.Log.WithField("account", account.Title).Info("Skipping account with expired cookie")
 				notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
 				if time.Since(lastNotification).Hours() > notificationInterval {
-					go sendDailyUpdate(account, s)
+					go sendExpiredCookieNotification(account, s)
 				} else {
-
-					logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
-
+					logger.Log.WithField("account", account.Title).Infof("Owner of %s recently notified within %.2f hours already, skipping", account.Title, notificationInterval)
 				}
 				continue
 			}
@@ -104,18 +138,14 @@ func CheckAccounts(s *discordgo.Session) {
 			if time.Since(lastCheck).Minutes() > checkInterval {
 				go CheckSingleAccount(account, s)
 			} else {
-
-				logger.Log.WithField("account ", account.Title).Info(" Account ", account.Title, " checked recently less than ", checkInterval, " Minutes ago, skipping ")
-
+				logger.Log.WithField("account", account.Title).Infof("Account %s checked recently less than %.2f minutes ago, skipping", account.Title, checkInterval)
 			}
 
 			notificationInterval, _ := strconv.ParseFloat(os.Getenv("NOTIFICATION_INTERVAL"), 64)
 			if time.Since(lastNotification).Hours() > notificationInterval {
 				go sendDailyUpdate(account, s)
 			} else {
-
-				logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
-
+				logger.Log.WithField("account", account.Title).Infof("Owner of %s recently notified within %.2f hours already, skipping", account.Title, notificationInterval)
 			}
 		}
 
@@ -235,7 +265,6 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		}
 	}
 }
-
 func GetColorForStatus(status models.Status, isExpiredCookie bool) int {
 	if isExpiredCookie {
 		return 0xff0000
