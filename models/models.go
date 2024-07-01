@@ -17,7 +17,14 @@ type Account struct {
 	SSOCookie              string // The SSO cookie associated with the account.
 	Created                string // The timestamp of when the account was created on Activision.
 	IsExpiredCookie        bool   `gorm:"default:false"`   // A flag indicating if the SSO cookie has expired.
-	InteractionType        string `gorm:"default:channel"` // The type of interaction the user has with the bot, can be channel or dm
+	NotificationType       string `gorm:"default:channel"` // User preference for location of notifications either channel or dm
+}
+
+type Ban struct {
+	gorm.Model
+	Account   Account // The account that has been banned.
+	AccountID uint    // The ID of the banned account.
+	Status    Status  // The status of the ban.
 }
 
 type Status string
@@ -29,10 +36,3 @@ const (
 	StatusUnknown       Status = "unknown"        // The status of the account is unknown.
 	StatusInvalidCookie Status = "invalid_cookie" // The account has an invalid SSO cookie.
 )
-
-type Ban struct {
-	gorm.Model
-	Account   Account // The account that has been banned.
-	AccountID uint    // The ID of the banned account.
-	Status    Status  // The status of the ban.
-}
