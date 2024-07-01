@@ -54,7 +54,7 @@ func sendDailyUpdate(account models.Account, discord *discordgo.Session) {
 	}
 
 	var channelID string
-	if account.InteractionType == "dm" {
+	if account.NotificationType == "dm" {
 		channel, err := discord.UserChannelCreate(account.UserID)
 		if err != nil {
 			logger.Log.WithError(err).Error("Failed to create DM channel")
@@ -107,28 +107,21 @@ func CheckAccounts(s *discordgo.Session) {
 				} else {
 
 					logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
-
 				}
 				continue
 			}
-
 			if time.Since(lastCheck).Minutes() > checkInterval {
 				go CheckSingleAccount(account, s)
 			} else {
-
 				logger.Log.WithField("account ", account.Title).Info(" Account ", account.Title, " checked recently less than ", checkInterval, " Minutes ago, skipping ")
-
 			}
-
 			if time.Since(lastNotification).Hours() > notificationInterval {
 				go sendDailyUpdate(account, s)
 			} else {
-
 				logger.Log.WithField(" account ", account.Title).Info(" Owner of ", account.Title, " recently notified within ", notificationInterval, " Hours already, skipping ")
 
 			}
 		}
-
 		time.Sleep(time.Duration(sleepDuration) * time.Minute)
 	}
 }
@@ -151,7 +144,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 				Timestamp:   time.Now().Format(time.RFC3339),
 			}
 			var channelID string
-			if account.InteractionType == "dm" {
+			if account.NotificationType == "dm" {
 				channel, err := discord.UserChannelCreate(account.UserID)
 				if err != nil {
 					logger.Log.WithError(err).Error(" Failed to create DM channel ")
@@ -209,7 +202,7 @@ func CheckSingleAccount(account models.Account, discord *discordgo.Session) {
 		}
 
 		var channelID string
-		if account.InteractionType == "dm" {
+		if account.NotificationType == "dm" {
 			channel, err := discord.UserChannelCreate(account.UserID)
 			if err != nil {
 				logger.Log.WithError(err).Error("Failed to create DM channel")
