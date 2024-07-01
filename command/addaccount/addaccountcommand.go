@@ -125,12 +125,12 @@ func CommandAddAccount(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	account = models.Account{
-		UserID:          userID,
-		Title:           title,
-		SSOCookie:       ssoCookie,
-		GuildID:         guildID,
-		ChannelID:       channelID,
-		InteractionType: "channel",
+		UserID:           userID,
+		Title:            title,
+		SSOCookie:        ssoCookie,
+		GuildID:          guildID,
+		ChannelID:        channelID,
+		NotificationType: "channel",
 	}
 
 	result = database.DB.Create(&account)
