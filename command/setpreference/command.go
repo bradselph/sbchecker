@@ -11,7 +11,7 @@ func RegisterCommand(s *discordgo.Session, guildID string) {
 	commands := []*discordgo.ApplicationCommand{
 		{
 			Name:        "setpreference",
-			Description: "Set your preference for bot Location of Notifications to be Sent",
+			Description: "Set your preference for for where you want to receive status notifications.",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
@@ -89,7 +89,6 @@ func CommandSetPreference(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	userID := i.Member.User.ID
 	guildID := i.GuildID
 	preferenceType := i.ApplicationCommandData().Options[0].StringValue()
-
 	var accounts []models.Account
 	result := database.DB.Where("user_id = ? AND guild_id = ?", userID, guildID).Find(&accounts)
 	if result.Error != nil {
@@ -105,7 +104,7 @@ func CommandSetPreference(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	}
 
 	for _, account := range accounts {
-		account.InteractionType = preferenceType
+		account.NotificationType = preferenceType
 		database.DB.Save(&account)
 	}
 
